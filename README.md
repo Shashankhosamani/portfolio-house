@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Shashank Hosamani — portfolio house
 
-## Getting Started
+A walk-through 3D portfolio. Scrolling opens each door and walks the camera through four rooms:
+Home (pull the lamp cord for the neon sign), About, Workshop (click a project card on the board) and Post room.
 
-First, run the development server:
+Built with Next.js (static export), React Three Fiber, drei and postprocessing.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
+npm run build      # static site in out/, deploy anywhere
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Add `?lite` to the URL to force the lighter rendering mode that phones get (no ambient occlusion, basic shadows).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Vercel**: import the repo, no settings needed.
+- **GitHub Pages / Netlify / any static host**: run `npm run build` and upload `out/`. Asset paths are relative, so a sub-folder works too.
+- `npm run build:preview` makes a copy for hosts that refuse `.glb` files or paths starting with `_` (it packs the models as JSON and renames `_next`). You only need this for those hosts.
 
-## Learn More
+## Where things live
 
-To learn more about Next.js, take a look at the following resources:
+| What | File |
+| --- | --- |
+| All text: projects, timeline, skills, links, credits | `lib/content.ts` |
+| Room size, colours, doors, walls | `components/house/Shell.tsx` |
+| Furniture placement | `components/house/Furniture.tsx` |
+| Name sign, lamp and pull cord | `components/house/Home.tsx` |
+| Project cards on the pegboard | `components/house/ProjectCards.tsx` |
+| Camera walk and post-processing | `components/house/Scene.tsx` |
+| Overlay UI, popup, loader | `components/Experience.tsx` |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 3D model credits
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Models come from the [Khronos glTF Sample Assets](https://github.com/KhronosGroup/glTF-Sample-Assets) collection, with textures resized to 1024px WebP.
 
-## Deploy on Vercel
+- Glam Velvet Sofa, Damask Chair, Barn Lamp, Potted Plant: Eric Chadwick / Wayfair, CC BY 4.0
+- Floor Lamp (LightsPunctualLamp): DGG, CC BY 4.0
+- Sheen Chair, Glass Vase with Flowers: Eric Chadwick, Rico Cilliers, CC0
+- Antique Camera: Maximilian Kamps, CC0
+- BoomBox, Water Bottle: Microsoft, CC0
+- Hardwood floor texture and Helvetiker font: three.js examples (MIT)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+CC BY models need visible credit; the site shows it under "3D model credits" in the Post room.
