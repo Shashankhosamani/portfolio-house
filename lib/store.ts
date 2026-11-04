@@ -34,16 +34,22 @@ export const useHouse = create<State>((set, get) => ({
   openProject: (modal) => set({ modal }),
 }));
 
-/** Scroll choreography shared by the camera and the interface. */
+/** Scroll choreography shared by the camera and the interface.
+ *  Four stops: Home and About in the living room, Workshop and Contact in the studio.
+ *  Only the walk from stop 1 to stop 2 goes through a door. */
 export const SEGS = 3.3;
+export const ROOM_OF = [0, 0, 1, 1];
+export const DOOR_SEGMENT = 1;
 export function walk(progress: number) {
   const c = (v: number) => Math.min(1, Math.max(0, v));
   const seg = Math.min(3, progress * SEGS);
   const k = Math.min(3, Math.floor(seg));
   const t = k === 3 ? 0 : seg - k;
-  const open = c((t - 0.3) / 0.2);
-  const move = c((t - 0.5) / 0.5);
+  const door = k === DOOR_SEGMENT;
+  const open = door ? c((t - 0.3) / 0.2) : 0;
+  const move = door ? c((t - 0.5) / 0.5) : c((t - 0.3) / 0.7);
   const active = move > 0.5 ? k + 1 : k;
   const settled = k === 3 || t < 0.32;
-  return { k, t, open, move, active, settled };
+  const room = ROOM_OF[active];
+  return { k, t, open, move, active, settled, room, door };
 }

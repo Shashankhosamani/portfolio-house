@@ -69,7 +69,7 @@ function Card({ i, x, y, z, rot }: { i: number; x: number; y: number; z: number;
 
 /** Pegboard with the five project cards pinned on it, above the workbench. */
 export function ProjectCards() {
-  const z = zBack(2) + 0.1;
+  const z = zBack(1) + 0.1;
   const peg = useMemo(() => {
     const t = canvasTexture(256, 256, (ctx, w, h) => {
       ctx.fillStyle = "#B48E62"; ctx.fillRect(0, 0, w, h);

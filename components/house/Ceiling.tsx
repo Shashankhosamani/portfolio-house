@@ -1,9 +1,9 @@
 "use client";
 import { zFront, zBack, H } from "./Shell";
 
-/** Flush-mount ceiling fixtures for rooms 1–3 (room 0 has the pendant). */
+/** Flush-mount ceiling fixture for the studio (the living room has the pendant). */
 export function CeilingFixtures() {
-  const spots: [number, number][] = [[1, 0.6], [2, -1.0], [3, 0]];
+  const spots: [number, number][] = [[1, 0]];
   return (
     <group>
       {spots.map(([j, x]) => {

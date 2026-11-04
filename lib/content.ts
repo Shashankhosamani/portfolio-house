@@ -1,4 +1,4 @@
-export const ROOMS = ["Home", "About", "Workshop", "Post room"] as const;
+export const ROOMS = ["Home", "About", "Workshop", "Contact"] as const;
 
 export const EMAIL = "shashankhosamani1109@gmail.com";
 export const LINKS = {
@@ -94,6 +94,9 @@ export const CREDITS = [
   { what: "Floor Lamp (LightsPunctualLamp)", who: "DGG", license: "CC BY 4.0" },
   { what: "Sheen Chair, Glass Vase with Flowers", who: "Eric Chadwick, Rico Cilliers", license: "CC0" },
   { what: "Antique Camera", who: "Maximilian Kamps", license: "CC0" },
+  { what: "Wood & Leather Sofa, Iridescent Dish with Olives", who: "Eric Chadwick", license: "CC BY 4.0" },
+  { what: "Teacup", who: "Poly Haven, Eric Chadwick", license: "CC0" },
+  { what: "Toy Car", who: "Guido Odendahl, Eric Chadwick", license: "CC0" },
   { what: "BoomBox, Water Bottle", who: "Microsoft", license: "CC0" },
   { what: "Hardwood floor texture", who: "three.js examples", license: "MIT" },
 ];

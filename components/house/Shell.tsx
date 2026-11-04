@@ -12,14 +12,13 @@ export const H = 3.2; // ceiling height
 export const T = 0.16; // wall thickness
 export const DOOR_W = 1.0;
 export const DOOR_H = 2.15;
-/** x position of the door in the back wall of rooms 0, 1, 2 */
-export const DOORS = [1.9, -1.9, 1.9];
+/** Two rooms: the living room and the studio. x position of the door in the living room's back wall. */
+export const NR = 2;
+export const DOORS = [1.9];
 
 export const ROOM_LOOK = [
-  { wall: "#B9AE9C", ceil: "#D8D2C6", trim: "#EDE7DB" }, // home: warm greige
-  { wall: "#7E8C74", ceil: "#CFD3C6", trim: "#E7E8DE" }, // about: sage
-  { wall: "#4A5563", ceil: "#B9BEC6", trim: "#D9DDE2" }, // workshop: slate
-  { wall: "#B5684D", ceil: "#D9C9BE", trim: "#EFE3D8" }, // post room: terracotta
+  { wall: "#B9AE9C", ceil: "#D8D2C6", trim: "#EDE7DB" }, // living room: warm greige
+  { wall: "#45525C", ceil: "#BFC4CA", trim: "#D9DDE2" }, // studio: slate blue
 ];
 
 export const zFront = (j: number) => -j * D;
@@ -100,7 +99,7 @@ function DoorWall({ j, bumpMap }: { j: number; bumpMap: THREE.Texture }) {
   const leaf = useRef<THREE.Group>(null);
   useFrame(() => {
     const { k, open } = walk(useHouse.getState().progress);
-    const a = j < k ? 1 : j === k ? open : 0;
+    const a = k > 1 ? 1 : k === 1 ? open : 0;
     if (leaf.current) leaf.current.rotation.y = THREE.MathUtils.damp(leaf.current.rotation.y, a * 1.75, 10, 1 / 60);
   });
   return (
@@ -160,21 +159,21 @@ function DoorWall({ j, bumpMap }: { j: number; bumpMap: THREE.Texture }) {
 
 export function Shell() {
   const floor = useFloor();
-  const bumps = useMemo(() => [1, 2, 3, 4].map((s) => {
+  const bumps = useMemo(() => [1, 2].map((s) => {
     const t = plaster(s);
     t.repeat.set(2, 1);
     return t;
   }), []);
   return (
     <group>
-      {[0, 1, 2, 3].map((j) => {
+      {[0, 1].map((j) => {
         const look = ROOM_LOOK[j];
         const zc = (zFront(j) + zBack(j)) / 2;
         return (
           <group key={j}>
             <mesh rotation-x={-Math.PI / 2} position={[0, 0, zc]} receiveShadow>
               <planeGeometry args={[W, D]} />
-              <meshStandardMaterial map={floor.map} bumpMap={floor.bump} bumpScale={0.4} roughnessMap={floor.rough} roughness={0.75} color={j === 2 ? "#9a8f86" : "#ffffff"} />
+              <meshStandardMaterial map={floor.map} bumpMap={floor.bump} bumpScale={0.4} roughnessMap={floor.rough} roughness={0.75} color={j === 1 ? "#b8aca2" : "#ffffff"} />
             </mesh>
             <mesh rotation-x={Math.PI / 2} position={[0, H, zc]} receiveShadow>
               <planeGeometry args={[W, D]} />
@@ -187,11 +186,11 @@ export function Shell() {
           </group>
         );
       })}
-      {/* front wall behind the camera, and the solid back wall of the last room */}
+      {/* front wall behind the camera, and the solid back wall of the studio */}
       <Wall z={0.08} from={-W / 2} to={W / 2} color={ROOM_LOOK[0].wall} bumpMap={bumps[0]} />
-      <Wall z={zBack(3)} from={-W / 2} to={W / 2} color={ROOM_LOOK[3].wall} bumpMap={bumps[3]} />
-      <Trim z={zBack(3) + 0.001} from={-W / 2} to={W / 2} color={ROOM_LOOK[3].trim} />
-      {[0, 1, 2].map((j) => <DoorWall key={j} j={j} bumpMap={bumps[j]} />)}
+      <Wall z={zBack(1)} from={-W / 2} to={W / 2} color={ROOM_LOOK[1].wall} bumpMap={bumps[1]} />
+      <Trim z={zBack(1) + 0.001} from={-W / 2} to={W / 2} color={ROOM_LOOK[1].trim} />
+      <DoorWall j={0} bumpMap={bumps[0]} />
     </group>
   );
 }

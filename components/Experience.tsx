@@ -45,7 +45,7 @@ function Panel({ room }: { room: number }) {
     <>
       <span className="eyebrow">Portfolio · Bengaluru</span>
       <h1>Shashank <span className="serif">Hosamani</span></h1>
-      <p>Full-stack engineer building AI-powered fintech products. Pull the cord under the lamp, then scroll to walk through the house.</p>
+      <p>Full-stack engineer building AI-powered fintech products. Pull the cord under the lamp, then scroll to look around the house.</p>
     </>
   );
   if (room === 1) return (
@@ -75,7 +75,7 @@ function Panel({ room }: { room: number }) {
   );
   return (
     <>
-      <span className="eyebrow">(03) Post room</span>
+      <span className="eyebrow">(03) Contact</span>
       <h2>Let&apos;s make <span className="serif">something.</span></h2>
       <p>I&apos;m open to full-stack and AI product roles. If you&apos;re building in fintech, agents or developer tools, I&apos;d like to hear about it.</p>
       <CopyEmail />
@@ -175,10 +175,10 @@ export default function Experience() {
           <button type="button" className="lights" aria-pressed={!lightsOn} onClick={toggle}>{lightsOn ? "Lights off" : "Lights on"}</button>
         </nav>
       </header>
-      <main className={`panel ${settled ? "on" : ""} ${active === 2 ? "right" : ""}`} key={active} aria-live="polite">
+      <main className={`panel ${settled ? "on" : ""} ${active === 2 ? "right" : active === 3 ? "side" : ""}`} key={active} aria-live="polite">
         <Panel room={active} />
       </main>
-      <div className={`hint ${settled && k < 3 ? "on" : ""}`}>scroll to walk into the {ROOMS[Math.min(3, k + 1)].toLowerCase()} ↓</div>
+      <div className={`hint ${settled && k < 3 ? "on" : ""}`}>scroll for {ROOMS[Math.min(3, k + 1)].toLowerCase()} ↓</div>
       <Loader />
       <Modal />
     </>

@@ -85,8 +85,8 @@ export function Pendant({ z }: { z: number }) {
           <meshStandardMaterial color="#8E8A82" />
         </mesh>
         <mesh position={[0, y - 0.6, 0]}>
-          <capsuleGeometry args={[0.018, 0.05, 4, 12]} />
-          <meshStandardMaterial color="#C8FF5A" emissive="#C8FF5A" emissiveIntensity={0.6} />
+          <capsuleGeometry args={[0.014, 0.04, 4, 12]} />
+          <meshStandardMaterial color="#C8FF5A" emissive="#C8FF5A" emissiveIntensity={0.15} />
         </mesh>
         <mesh position={[0, y - 0.45, 0]} visible={false}
           onClick={(e) => { e.stopPropagation(); tug.current = 1; toggle(); }}

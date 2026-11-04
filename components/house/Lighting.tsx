@@ -14,11 +14,11 @@ function RoomLight({ j, x = 0, y = H - 0.3, intensity = 34, color = "#FFD9A8", d
   const { scene } = useThree();
   useFrame((_, dt) => {
     const { progress, lightsOn } = useHouse.getState();
-    const { k } = walk(progress);
+    const { room } = walk(progress);
     const on = dimmable && !lightsOn ? 0.015 : 1;
     if (spot.current) {
       spot.current.intensity = THREE.MathUtils.damp(spot.current.intensity, intensity * on, 14, dt);
-      spot.current.castShadow = j === k || j === k + 1;
+      spot.current.castShadow = Math.abs(j - room) <= 1;
       if (spot.current.target.parent !== scene) scene.add(spot.current.target);
     }
     if (fill.current) fill.current.intensity = THREE.MathUtils.damp(fill.current.intensity, intensity * 0.35 * on, 14, dt);
@@ -57,12 +57,22 @@ function Ambient() {
   const { scene } = useThree();
   useFrame((_, dt) => {
     const { lightsOn, progress } = useHouse.getState();
-    const inHome = walk(progress).k === 0;
+    const inHome = walk(progress).room === 0;
     const dark = !lightsOn && inHome;
     if (h.current) h.current.intensity = THREE.MathUtils.damp(h.current.intensity, dark ? 0.04 : 0.45, 10, dt);
     scene.environmentIntensity = THREE.MathUtils.damp(scene.environmentIntensity ?? 1, dark ? 0.05 : 0.55, 10, dt);
   });
   return <hemisphereLight ref={h} args={["#FFF1DE", "#3A2E24", 0.45]} />;
+}
+
+/** Small local lights: the reading-corner sconce, the monitor glow, the bench lamp. */
+function Accent({ p, color, intensity, dimmable = false }: { p: [number, number, number]; color: string; intensity: number; dimmable?: boolean }) {
+  const l = useRef<THREE.PointLight>(null);
+  useFrame((_, dt) => {
+    const off = dimmable && !useHouse.getState().lightsOn;
+    if (l.current) l.current.intensity = THREE.MathUtils.damp(l.current.intensity, off ? 0 : intensity, 14, dt);
+  });
+  return <pointLight ref={l} position={p} color={color} intensity={intensity} decay={2} distance={4.5} />;
 }
 
 export function Lighting() {
@@ -76,12 +86,13 @@ export function Lighting() {
         <Lightformer form="ring" intensity={1.6} color="#FFD4A0" position={[4, 3, 2]} scale={2} />
         <Lightformer form="rect" intensity={0.5} color="#ffffff" position={[0, 1, 8]} scale={[12, 3, 1]} />
       </Environment>
-      <RoomLight j={0} y={2.38} intensity={40} dimmable />
+      <RoomLight j={0} y={2.38} intensity={36} dimmable />
       <FloorLampGlow />
       <Moonlight />
-      <RoomLight j={1} x={0.6} intensity={30} />
-      <RoomLight j={2} x={-1.0} intensity={34} color="#FFE7C8" />
-      <RoomLight j={3} intensity={30} color="#FFD3A0" />
+      <Accent p={[2.6, 2.45, -3.2]} color="#FFD3A0" intensity={6} dimmable />
+      <RoomLight j={1} intensity={38} color="#FFE7C8" />
+      <Accent p={[-2.4, 1.3, -9.2]} color="#B8D4FF" intensity={2.5} />
+      <Accent p={[-2.4, 1.6, -11.2]} color="#FFD9A0" intensity={2.5} />
     </>
   );
 }

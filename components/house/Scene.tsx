@@ -16,26 +16,31 @@ import { CeilingFixtures } from "./Ceiling";
 const ease = (x: number) => x * x * (3 - 2 * x);
 const EYE = 1.6;
 
-/** Where the camera stands in each room, and what it looks at. */
-const view = (j: number) => j === 0 ? new THREE.Vector3(0, EYE, -0.9) : new THREE.Vector3(DOORS[j - 1] * 0.55, EYE, zFront(j) - 1.25);
-const look = (j: number) => new THREE.Vector3(j === 0 ? -0.35 : j === 2 ? -1.25 : 0, 1.5, zBack(j));
-const doorPoint = (j: number) => new THREE.Vector3(DOORS[j], 1.3, zBack(j));
+/** The four stops: Home and About in the living room, Workshop and Contact in the studio. */
+const V = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
+const STOPS = [
+  { pos: V(0, EYE, -0.9), look: V(-0.35, 1.45, zBack(0)) },         // Home: name on the back wall
+  { pos: V(-1.5, EYE, -2.55), look: V(3.5, 1.5, -3.25) },            // About: reading-corner wall
+  { pos: V(1.0, EYE, zFront(1) - 1.2), look: V(-0.4, 1.45, zBack(1)) }, // Workshop: pegboard + skill bins
+  { pos: V(1.5, EYE, zFront(1) - 2.9), look: V(-3.5, 1.3, zFront(1) - 4.3) }, // Contact: the desk
+];
+const DOOR = V(DOORS[0], 1.3, zBack(0));
 
 function CameraRig() {
   const { camera, size } = useThree();
   const smooth = useRef(0);
   const target = useRef(new THREE.Vector3());
   const mouse = useRef(new THREE.Vector2());
-  const curves = useMemo(() => [0, 1, 2].map((k) => new THREE.CatmullRomCurve3([
-    view(k),
-    new THREE.Vector3(DOORS[k] * 0.9, EYE, zBack(k) + 1.0),
-    new THREE.Vector3(DOORS[k], EYE, zBack(k) - 0.45),
-    view(k + 1),
-  ], false, "centripetal")), []);
+  const doorCurve = useMemo(() => new THREE.CatmullRomCurve3([
+    STOPS[1].pos,
+    V(DOORS[0] * 0.9, EYE, zBack(0) + 1.0),
+    V(DOORS[0], EYE, zBack(0) - 0.45),
+    STOPS[2].pos,
+  ], false, "centripetal"), []);
   const reduce = useMemo(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
 
   useFrame((state, dt) => {
-    // keep at least ~68° of horizontal view so phones still see the room
+    // keep at least ~72° of horizontal view so phones still see the room
     const cam = camera as THREE.PerspectiveCamera;
     const aspect = size.width / size.height;
     const hfov = 72 * Math.PI / 180;
@@ -44,22 +49,28 @@ function CameraRig() {
 
     const p = useHouse.getState().progress;
     smooth.current = reduce ? p : THREE.MathUtils.damp(smooth.current, p, 5, dt);
-    const { k, t, move } = walk(smooth.current);
+    const { k, t, move, door } = walk(smooth.current);
     const c = (v: number) => Math.min(1, Math.max(0, v));
     let pos: THREE.Vector3, tgt: THREE.Vector3;
-    if (k === 3 || move <= 0) {
-      pos = view(k);
-      const a = k === 3 ? 0 : ease(c((t - 0.3) / 0.2));
-      tgt = look(k).lerp(k === 3 ? look(k) : doorPoint(k), a);
+    if (k === 3) {
+      pos = STOPS[3].pos.clone(); tgt = STOPS[3].look.clone();
+    } else if (door) {
+      if (move <= 0) {
+        pos = STOPS[1].pos.clone();
+        tgt = STOPS[1].look.clone().lerp(DOOR, ease(c((t - 0.3) / 0.2)));
+      } else {
+        pos = doorCurve.getPoint(ease(move));
+        tgt = DOOR.clone().lerp(STOPS[2].look, ease(c((move - 0.3) / 0.7)));
+      }
     } else {
       const m = ease(move);
-      pos = curves[k].getPoint(m);
-      tgt = doorPoint(k).lerp(look(k + 1), ease(c((move - 0.3) / 0.7)));
+      pos = STOPS[k].pos.clone().lerp(STOPS[k + 1].pos, m);
+      tgt = STOPS[k].look.clone().lerp(STOPS[k + 1].look, m);
     }
     if (!reduce) {
       mouse.current.lerp(state.pointer, 0.05);
-      tgt.x += mouse.current.x * 0.35;
-      tgt.y += mouse.current.y * 0.18;
+      tgt.x += mouse.current.x * 0.3;
+      tgt.y += mouse.current.y * 0.15;
       pos.y += Math.sin(state.clock.elapsedTime * 0.6) * 0.008;
     }
     camera.position.copy(pos);

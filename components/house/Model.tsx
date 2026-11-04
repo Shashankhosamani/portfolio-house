@@ -36,5 +36,6 @@ export function Model({ name, position, rotation, scale = 1 }: Props) {
 export const MODELS = [
   "GlamVelvetSofa", "LightsPunctualLamp", "DiffuseTransmissionPlant", "GlassVaseFlowers",
   "SheenChair", "AnisotropyBarnLamp", "AntiqueCamera", "BoomBox", "WaterBottle", "ChairDamaskPurplegold",
+  "DiffuseTransmissionTeacup", "ToyCar", "SheenWoodLeatherSofa", "IridescentDishWithOlives",
 ];
 MODELS.forEach((m) => useLoader.preload(PackedGLTFLoader, url(m)));
