@@ -5,6 +5,7 @@ import { useProgress } from "@react-three/drei";
 import { useHouse, walk, SEGS } from "@/lib/store";
 import { ROOMS, STACK, TIMELINE, EMAIL, LINKS, CREDITS } from "@/lib/content";
 import ComputerOS from "./os/Computer";
+import PrintCard from "./PrintCard";
 
 const Scene = dynamic(() => import("./house/Scene"), { ssr: false });
 
@@ -42,6 +43,7 @@ function CopyEmail() {
 
 function Panel({ room }: { room: number }) {
   const sit = useHouse((s) => s.openComputer);
+  const print = useHouse((s) => s.startPrint);
   if (room === 0) return (
     <>
       <span className="eyebrow">Portfolio · Bengaluru</span>
@@ -65,7 +67,10 @@ function Panel({ room }: { room: number }) {
       <span className="eyebrow">(02) Workshop</span>
       <h2>Everything I&apos;ve <span className="serif">built</span> lives on this computer.</h2>
       <p>Click the screen to sit down. Open each project in its own window, or try the terminal.</p>
-      <button type="button" className="cta" onClick={() => sit("monitor")}>Use the computer →</button>
+      <div className="cta-row">
+        <button type="button" className="cta" onClick={() => sit("monitor")}>Use the computer →</button>
+        <button type="button" className="cta ghost" onClick={print}>Print my resume</button>
+      </div>
       <div className="chips">{STACK.map((s) => <span key={s}>{s}</span>)}</div>
     </>
   );
@@ -75,7 +80,10 @@ function Panel({ room }: { room: number }) {
       <h2>Let&apos;s make <span className="serif">something.</span></h2>
       <p>I&apos;m open to full-stack and AI product roles. If you&apos;re building in fintech, agents or developer tools, I&apos;d like to hear about it.</p>
       <CopyEmail />
-      <button type="button" className="cta ghost" onClick={() => sit("laptop")}>Or write from the laptop →</button>
+      <div className="cta-row">
+        <button type="button" className="cta ghost" onClick={() => sit("laptop")}>Write from the laptop →</button>
+        <button type="button" className="cta ghost" onClick={print}>Print my resume</button>
+      </div>
       <div className="links">
         <a href={LINKS.github} target="_blank" rel="noopener">GitHub ↗</a>
         <a href={LINKS.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a>
@@ -111,7 +119,7 @@ export default function Experience() {
   const lightsOn = useHouse((s) => s.lightsOn);
   const toggle = useHouse((s) => s.toggleLights);
   const { k, active, settled } = useWalk();
-  const seated = useHouse((s) => s.computer !== null);
+  const seated = useHouse((s) => s.computer !== null || s.printState !== "idle");
   const bar = useRef<HTMLDivElement>(null);
   const [quality, setQuality] = useState<"high" | "low" | null>(null);
 
@@ -150,6 +158,7 @@ export default function Experience() {
       <div className={`hint ${settled && !seated && k < 3 ? "on" : ""}`}>scroll for {ROOMS[Math.min(3, k + 1)].toLowerCase()} ↓</div>
       <Loader />
       <ComputerOS />
+      <PrintCard />
     </>
   );
 }

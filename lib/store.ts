@@ -12,6 +12,12 @@ type State = {
   /** true while the desktop covers the screen, so the 3D scene can stop rendering */
   osOpen: boolean;
   setOsOpen: (v: boolean) => void;
+  /** the resume printer: idle → printing → done (paper in the tray) */
+  printState: "idle" | "printing" | "done";
+  printAt: number;
+  startPrint: () => void;
+  finishPrint: () => void;
+  dismissPrint: () => void;
   setProgress: (p: number) => void;
   toggleLights: () => void;
   openProject: (i: number | null) => void;
@@ -31,6 +37,15 @@ export const useHouse = create<State>((set, get) => ({
   computer: null,
   osOpen: false,
   setOsOpen: (osOpen) => set({ osOpen }),
+  printState: "idle",
+  printAt: 0,
+  startPrint: () => {
+    if (get().printState === "printing") return;
+    set({ computer: null, osOpen: false, printState: "printing", printAt: performance.now() });
+    import("./sound").then((m) => m.printerSound()).catch(() => {});
+  },
+  finishPrint: () => set({ printState: "done" }),
+  dismissPrint: () => set({ printState: "idle" }),
   openComputer: (computer) => set({ computer }),
   closeComputer: () => set({ computer: null }),
   setProgress: (progress) => set({ progress }),

@@ -5,6 +5,7 @@ import { W, zBack, zFront } from "./Shell";
 import { canvasTexture, rng, FONT_SERIF, FONT_SANS } from "./textures";
 import { Box, Table, Rug, BookStack, Bookshelf, Plaque, ArtPrint, CvPoster, Curtain, Console, Mug, Keyboard, SkillBins, DeskLamp } from "./Props";
 import { Workstation, OpenLaptop } from "./Computer3D";
+import { Printer, PrinterCabinet } from "./Printer";
 import { STACK } from "@/lib/content";
 
 const R = Math.PI / 2;
@@ -150,7 +151,9 @@ export function Furniture() {
       <Model name="WaterBottle" position={[-1.35, 0.76 + 0.13, S + 0.65]} scale={1} />
       <Model name="ChairDamaskPurplegold" position={[-0.6, 0, S + 1.45]} rotation={[0, Math.PI + 0.15, 0]} scale={1.05} />
       <ArtPrint p={[-0.6, 2.3, S + 0.09]} w={1.6} h={0.62} seed={23} palette={["#141A14", "#C8FF5A", "#2F4A5A", "#E9E1CF"]} />
-      <SkillBins p={[2.3, 0.95, S + 0.2]} skills={STACK} />
+      <SkillBins p={[2.3, 1.05, S + 0.2]} skills={STACK} />
+      <PrinterCabinet p={[2.3, 0, S + 0.36]} />
+      <Printer p={[2.05, 0.54, S + 0.36]} />
       <Model name="DiffuseTransmissionPlant" position={[-2.7, 0, S + 0.5]} scale={1.2} />
 
       {/* left wall: the contact desk, with a laptop that opens Mail */}

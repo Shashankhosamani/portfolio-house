@@ -270,3 +270,28 @@ a:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px soli
 }
 @media (prefers-reduced-motion: reduce) { .os, .os-win { transition: none; animation: none; } }
 .top[hidden] { display: none; }
+
+/* ───────── resume printer ───────── */
+.cta-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.print-status { position: fixed; z-index: 15; left: 50%; transform: translateX(-50%); bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 13px; color: var(--paper);
+  background: rgba(10,10,10,.75); backdrop-filter: blur(10px); border: 1px solid rgba(236,233,226,.12); padding: 10px 16px; border-radius: 99px; white-space: nowrap; }
+.print-status i { width: 8px; height: 8px; border-radius: 50%; background: #FFC98A; animation: blink .5s steps(2) infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+.print-card { position: fixed; z-index: 15; right: var(--gut); bottom: calc(28px + env(safe-area-inset-bottom, 0px)); width: min(520px, calc(100vw - 32px));
+  display: grid; grid-template-columns: 132px 1fr; gap: 18px; padding: 18px; border-radius: 8px;
+  background: rgba(10,10,10,.78); backdrop-filter: blur(14px); border: 1px solid rgba(236,233,226,.12); animation: os-pop .35s cubic-bezier(.2,.8,.2,1); }
+.print-card img { width: 100%; height: auto; display: block; border-radius: 2px; box-shadow: 0 10px 24px rgba(0,0,0,.5); transform: rotate(-2deg); }
+.pc-text { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.pc-text h2 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.03em; line-height: 1; }
+.pc-text p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--soft); }
+.pc-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.pc-actions .cta { text-decoration: none; }
+.pc-actions .cta:hover { color: var(--lime-ink); }
+.pc-actions .cta.ghost:hover { color: var(--lime); }
+.pc-back { align-self: flex-start; background: none; border: 0; color: var(--mute); font-family: var(--mono); font-size: 12px; cursor: pointer; padding: 4px 0; }
+.pc-back:hover { color: var(--paper); }
+@media (max-width: 820px) and (orientation: portrait) {
+  .print-card { left: 0; right: 0; width: auto; top: 56svh; bottom: 0; border-radius: 0; grid-template-columns: 96px 1fr; background: var(--ink); backdrop-filter: none; overflow-y: auto; }
+  .print-status { bottom: auto; top: calc(56svh - 52px); }
+}

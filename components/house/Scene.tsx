@@ -9,7 +9,7 @@ import { useHouse, walk } from "@/lib/store";
 import { Shell, DOORS, zFront, zBack } from "./Shell";
 import { Furniture } from "./Furniture";
 import { NameSign, Pendant } from "./Home";
-import { screens } from "./screens";
+import { screens, spots } from "./screens";
 import { Lighting } from "./Lighting";
 import { CeilingFixtures } from "./Ceiling";
 
@@ -77,8 +77,15 @@ function CameraRig() {
       pos.y += Math.sin(state.clock.elapsedTime * 0.6) * 0.008;
     }
     // sitting down at a computer: glide in until the screen fills the view
-    const which = useHouse.getState().computer;
-    const mesh = which ? screens[which] : undefined;
+    const st = useHouse.getState();
+    const mesh = st.computer ? screens[st.computer] : undefined;
+    const printer = !mesh && st.printState !== "idle" ? spots.printer : undefined;
+    if (printer) {
+      // walking up to the printer: look down at the tray from a step away
+      printer.updateWorldMatrix(true, false);
+      zoomLook.current.copy(printer.localToWorld(new THREE.Vector3(0, 0.1, 0.14)));
+      zoomPos.current.copy(printer.localToWorld(new THREE.Vector3(-0.05, 0.62, 1.0)));
+    }
     if (mesh) {
       const geo = (mesh.geometry as THREE.PlaneGeometry).parameters;
       mesh.updateWorldMatrix(true, false);
@@ -88,7 +95,8 @@ function CameraRig() {
       const dist = (worldH * 0.62) / Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
       zoomPos.current.copy(zoomLook.current).addScaledVector(normal, dist);
     }
-    zoom.current = reduce ? (mesh ? 1 : 0) : THREE.MathUtils.damp(zoom.current, mesh ? 1 : 0, 3.2, dt);
+    const focused = !!(mesh || printer);
+    zoom.current = reduce ? (focused ? 1 : 0) : THREE.MathUtils.damp(zoom.current, focused ? 1 : 0, 3.2, dt);
     const z = ease(Math.min(1, zoom.current));
     camera.position.copy(pos.lerp(zoomPos.current, z));
     target.current.lerp(tgt, reduce ? 1 : 0.25);

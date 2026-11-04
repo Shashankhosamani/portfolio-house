@@ -95,6 +95,7 @@ function MailApp() {
 }
 
 function TerminalApp({ open, leave }: { open: (a: App) => void; leave: () => void }) {
+  const print = useHouse((s) => s.startPrint);
   const [lines, setLines] = useState<ReactNode[]>([
     <span key="w">ShashankOS terminal. Type <b>help</b> to see what you can do.</span>,
   ]);
@@ -125,7 +126,8 @@ open <n|name>   open a project, e.g. open 4 or open costiq
 whoami          who I am
 skills          what I work with
 contact         how to reach me
-resume          link to my resume
+print           print my resume on the studio printer
+resume          link to the PDF
 clear           clear the screen
 exit            leave the computer`}</pre>);
         break;
@@ -149,6 +151,12 @@ exit            leave the computer`}</pre>);
       case "contact": case "mail":
         out.push(<span key="c">{EMAIL} · <a href={LINKS.github} target="_blank" rel="noopener">GitHub</a> · <a href={LINKS.linkedin} target="_blank" rel="noopener">LinkedIn</a></span>);
         break;
+      case "print": case "lpr":
+        out.push(<span key="p" className="t-ok">Sending Shashank_Hosamani_Resume.pdf to the printer…</span>);
+        setLines((l) => [...l, ...out]);
+        setTimeout(print, 600);
+        setValue("");
+        return;
       case "resume": case "cv":
         out.push(<a key="r" href={LINKS.resume} target="_blank" rel="noopener">Shashank_Hosamani_Resume.pdf ↗</a>);
         break;
@@ -192,6 +200,8 @@ export default function ComputerOS() {
   const [visible, setVisible] = useState(false);
   const setOsOpen = useHouse((s) => s.setOsOpen);
   useEffect(() => { setOsOpen(visible); }, [visible, setOsOpen]);
+  useEffect(() => { if (!computer) setVisible(false); }, [computer]);
+  const print = useHouse((s) => s.startPrint);
   const [wins, setWins] = useState<Win[]>([]);
   const [clock, setClock] = useState("");
   const root = useRef<HTMLDivElement>(null);
@@ -274,12 +284,10 @@ export default function ComputerOS() {
   const dock: (App | "resume")[] = ["projects", "terminal", "mail", "skills", "resume"];
   const activeTop = wins.length ? wins.reduce((a, b) => (a.z > b.z ? a : b)) : null;
 
-  const launch = (a: App | "resume") => a !== "resume" && open(a);
+  const launch = (a: App | "resume") => (a === "resume" ? print() : open(a));
   const IconButton = ({ a, className }: { a: App | "resume"; className: string }) => {
-    const label = a === "resume" ? "Resume.pdf" : title(a);
-    return a === "resume"
-      ? <a className={className} href={LINKS.resume} target="_blank" rel="noopener"><Glyph app="resume" /><span>{label}</span></a>
-      : <button type="button" className={className} onClick={() => launch(a)}><Glyph app={a} /><span>{label}</span></button>;
+    const label = a === "resume" ? "Print resume" : title(a);
+    return <button type="button" className={className} onClick={() => launch(a)} title={label}><Glyph app={a} /><span>{label}</span></button>;
   };
 
   return (

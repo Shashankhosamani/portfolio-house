@@ -6,6 +6,7 @@ A walk-through 3D portfolio in two furnished rooms. Scrolling moves the camera b
 - **Living room · About**: the reading-corner wall with the CV poster, plaques and bookshelves.
 - **Studio · Workshop**: the workstation. Click its monitor to sit down at "ShashankOS": project windows, a terminal (`help`, `projects`, `open costiq`…), Mail and Skills.
 - **Studio · Contact**: the laptop desk and post box. The laptop opens the same computer in Mail.
+- **The printer** (on the cabinet under the skill bins): click it, press "Print my resume", or type `print` in the terminal. The real first page of the resume rolls out, then a card offers the PDF download.
 
 Built with Next.js (static export), React Three Fiber, drei and postprocessing.
 
@@ -37,6 +38,14 @@ Add `?lite` to the URL to force the lighter rendering mode that phones get (no a
 | Name sign, lamp and pull cord | `components/house/Home.tsx` |
 | Clickable monitor and laptop screens | `components/house/Computer3D.tsx` |
 | The in-computer desktop (windows, terminal, mail) | `components/os/Computer.tsx` |
+| Resume printer and its download card | `components/house/Printer.tsx`, `components/PrintCard.tsx` |
+| Printer sound (Web Audio, no files) | `lib/sound.ts` |
+
+If you update the resume PDF in `public/`, regenerate the printed page image:
+
+```bash
+pdftoppm -f 1 -l 1 -r 110 -jpeg -singlefile public/Shashank_Hosamani_Resume.pdf public/textures/resume-page
+```
 | Camera walk and post-processing | `components/house/Scene.tsx` |
 | Overlay UI, popup, loader | `components/Experience.tsx` |
 
