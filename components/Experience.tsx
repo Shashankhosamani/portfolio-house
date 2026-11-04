@@ -3,7 +3,8 @@ import dynamic from "next/dynamic";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useProgress } from "@react-three/drei";
 import { useHouse, walk, SEGS } from "@/lib/store";
-import { ROOMS, PROJECTS, STACK, TIMELINE, EMAIL, LINKS, CREDITS } from "@/lib/content";
+import { ROOMS, STACK, TIMELINE, EMAIL, LINKS, CREDITS } from "@/lib/content";
+import ComputerOS from "./os/Computer";
 
 const Scene = dynamic(() => import("./house/Scene"), { ssr: false });
 
@@ -40,7 +41,7 @@ function CopyEmail() {
 }
 
 function Panel({ room }: { room: number }) {
-  const open = useHouse((s) => s.openProject);
+  const sit = useHouse((s) => s.openComputer);
   if (room === 0) return (
     <>
       <span className="eyebrow">Portfolio · Bengaluru</span>
@@ -61,15 +62,10 @@ function Panel({ room }: { room: number }) {
   );
   if (room === 2) return (
     <>
-      <span className="eyebrow">(02) Workshop · click a card on the board, or a project below</span>
-      <p className="note">Click a card on the board, or pick one here.</p>
-      <div className="plist">
-        {PROJECTS.map((p, i) => (
-          <button key={p.id} type="button" className="prow" onClick={() => open(i)}>
-            <span className="n">{p.n}</span><span><b>{p.title}</b><small>{p.tag}</small></span><em>→</em>
-          </button>
-        ))}
-      </div>
+      <span className="eyebrow">(02) Workshop</span>
+      <h2>Everything I&apos;ve <span className="serif">built</span> lives on this computer.</h2>
+      <p>Click the screen to sit down. Open each project in its own window, or try the terminal.</p>
+      <button type="button" className="cta" onClick={() => sit("monitor")}>Use the computer →</button>
       <div className="chips">{STACK.map((s) => <span key={s}>{s}</span>)}</div>
     </>
   );
@@ -79,6 +75,7 @@ function Panel({ room }: { room: number }) {
       <h2>Let&apos;s make <span className="serif">something.</span></h2>
       <p>I&apos;m open to full-stack and AI product roles. If you&apos;re building in fintech, agents or developer tools, I&apos;d like to hear about it.</p>
       <CopyEmail />
+      <button type="button" className="cta ghost" onClick={() => sit("laptop")}>Or write from the laptop →</button>
       <div className="links">
         <a href={LINKS.github} target="_blank" rel="noopener">GitHub ↗</a>
         <a href={LINKS.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a>
@@ -90,35 +87,6 @@ function Panel({ room }: { room: number }) {
         <p>Models from the Khronos glTF Sample Assets collection.</p>
       </details>
     </>
-  );
-}
-
-function Modal() {
-  const i = useHouse((s) => s.modal);
-  const close = useHouse((s) => s.openProject);
-  const btn = useRef<HTMLButtonElement>(null);
-  useEffect(() => {
-    if (i == null) return;
-    btn.current?.focus();
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") close(null); };
-    addEventListener("keydown", onKey);
-    return () => removeEventListener("keydown", onKey);
-  }, [i, close]);
-  if (i == null) return null;
-  const p = PROJECTS[i];
-  return (
-    <div className="modal" role="dialog" aria-modal="true" aria-labelledby="m-title" onClick={(e) => { if (e.target === e.currentTarget) close(null); }}>
-      <div className="sheet">
-        <div className="art" dangerouslySetInnerHTML={{ __html: p.art }} />
-        <div className="txt">
-          <div className="row"><span>{p.n} · {p.tag}</span><button ref={btn} type="button" className="close" onClick={() => close(null)}>Close ✕</button></div>
-          <h3 id="m-title">{p.title}</h3>
-          <p>{p.line}</p>
-          <ul>{p.points.map((t) => <li key={t}>{t}</li>)}</ul>
-          <div className="tags">{p.tags.map((t) => <span key={t}>{t}</span>)}</div>
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -143,6 +111,7 @@ export default function Experience() {
   const lightsOn = useHouse((s) => s.lightsOn);
   const toggle = useHouse((s) => s.toggleLights);
   const { k, active, settled } = useWalk();
+  const seated = useHouse((s) => s.computer !== null);
   const bar = useRef<HTMLDivElement>(null);
   const [quality, setQuality] = useState<"high" | "low" | null>(null);
 
@@ -166,7 +135,7 @@ export default function Experience() {
       <div className="scroll-track" aria-hidden="true" />
       <div className="canvas-wrap">{quality && <Scene quality={quality} />}</div>
       <div className="bar" ref={bar} />
-      <header className="top">
+      <header className="top" hidden={seated}>
         <span className="brand"><span className="full">SHASHANK H.</span><span className="short">SH.</span></span>
         <nav aria-label="Rooms">
           {ROOMS.map((r, j) => (
@@ -175,12 +144,12 @@ export default function Experience() {
           <button type="button" className="lights" aria-pressed={!lightsOn} onClick={toggle}>{lightsOn ? "Lights off" : "Lights on"}</button>
         </nav>
       </header>
-      <main className={`panel ${settled ? "on" : ""} ${active === 2 ? "right" : active === 3 ? "side" : ""}`} key={active} aria-live="polite">
+      <main className={`panel ${settled && !seated ? "on" : ""} ${active === 2 ? "right" : active === 3 ? "side" : ""}`} key={active} aria-live="polite">
         <Panel room={active} />
       </main>
-      <div className={`hint ${settled && k < 3 ? "on" : ""}`}>scroll for {ROOMS[Math.min(3, k + 1)].toLowerCase()} ↓</div>
+      <div className={`hint ${settled && !seated && k < 3 ? "on" : ""}`}>scroll for {ROOMS[Math.min(3, k + 1)].toLowerCase()} ↓</div>
       <Loader />
-      <Modal />
+      <ComputerOS />
     </>
   );
 }

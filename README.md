@@ -4,8 +4,8 @@ A walk-through 3D portfolio in two furnished rooms. Scrolling moves the camera b
 
 - **Living room · Home**: the name sign over a media console (pull the lamp cord for neon).
 - **Living room · About**: the reading-corner wall with the CV poster, plaques and bookshelves.
-- **Studio · Workshop**: project cards on a pegboard (click one) and skill bins on the shelf.
-- **Studio · Contact**: the desk with a code monitor, laptop and the post box.
+- **Studio · Workshop**: the workstation. Click its monitor to sit down at "ShashankOS": project windows, a terminal (`help`, `projects`, `open costiq`…), Mail and Skills.
+- **Studio · Contact**: the laptop desk and post box. The laptop opens the same computer in Mail.
 
 Built with Next.js (static export), React Three Fiber, drei and postprocessing.
 
@@ -35,7 +35,8 @@ Add `?lite` to the URL to force the lighter rendering mode that phones get (no a
 | Hand-built props (monitor, laptop, bins, curtains, art…) | `components/house/Props.tsx` |
 | Camera stops | `STOPS` in `components/house/Scene.tsx` |
 | Name sign, lamp and pull cord | `components/house/Home.tsx` |
-| Project cards on the pegboard | `components/house/ProjectCards.tsx` |
+| Clickable monitor and laptop screens | `components/house/Computer3D.tsx` |
+| The in-computer desktop (windows, terminal, mail) | `components/os/Computer.tsx` |
 | Camera walk and post-processing | `components/house/Scene.tsx` |
 | Overlay UI, popup, loader | `components/Experience.tsx` |
 

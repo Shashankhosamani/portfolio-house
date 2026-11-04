@@ -9,7 +9,7 @@ import { useHouse, walk } from "@/lib/store";
 import { Shell, DOORS, zFront, zBack } from "./Shell";
 import { Furniture } from "./Furniture";
 import { NameSign, Pendant } from "./Home";
-import { ProjectCards } from "./ProjectCards";
+import { screens } from "./screens";
 import { Lighting } from "./Lighting";
 import { CeilingFixtures } from "./Ceiling";
 
@@ -38,6 +38,9 @@ function CameraRig() {
     STOPS[2].pos,
   ], false, "centripetal"), []);
   const reduce = useMemo(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
+  const zoom = useRef(0);
+  const zoomPos = useRef(new THREE.Vector3());
+  const zoomLook = useRef(new THREE.Vector3());
 
   useFrame((state, dt) => {
     // keep at least ~72° of horizontal view so phones still see the room
@@ -73,16 +76,33 @@ function CameraRig() {
       tgt.y += mouse.current.y * 0.15;
       pos.y += Math.sin(state.clock.elapsedTime * 0.6) * 0.008;
     }
-    camera.position.copy(pos);
+    // sitting down at a computer: glide in until the screen fills the view
+    const which = useHouse.getState().computer;
+    const mesh = which ? screens[which] : undefined;
+    if (mesh) {
+      const geo = (mesh.geometry as THREE.PlaneGeometry).parameters;
+      mesh.updateWorldMatrix(true, false);
+      mesh.getWorldPosition(zoomLook.current);
+      const normal = new THREE.Vector3(0, 0, 1).transformDirection(mesh.matrixWorld);
+      const worldH = geo.height * mesh.matrixWorld.getMaxScaleOnAxis();
+      const dist = (worldH * 0.62) / Math.tan(THREE.MathUtils.degToRad(cam.fov / 2));
+      zoomPos.current.copy(zoomLook.current).addScaledVector(normal, dist);
+    }
+    zoom.current = reduce ? (mesh ? 1 : 0) : THREE.MathUtils.damp(zoom.current, mesh ? 1 : 0, 3.2, dt);
+    const z = ease(Math.min(1, zoom.current));
+    camera.position.copy(pos.lerp(zoomPos.current, z));
     target.current.lerp(tgt, reduce ? 1 : 0.25);
-    camera.lookAt(target.current);
+    camera.lookAt(target.current.clone().lerp(zoomLook.current, z));
   });
   return null;
 }
 
 export default function Scene({ quality }: { quality: "high" | "low" }) {
+  // nothing in the room is visible while the desktop covers the screen, so stop drawing it
+  const paused = useHouse((s) => s.osOpen);
   return (
     <Canvas
+      frameloop={paused ? "never" : "always"}
       shadows={quality === "high" ? "soft" : "basic"}
       dpr={quality === "high" ? [1, 1.75] : [1, 1.25]}
       camera={{ position: [0, EYE, -0.9], fov: 55, near: 0.05, far: 40 }}
@@ -97,7 +117,6 @@ export default function Scene({ quality }: { quality: "high" | "low" }) {
         <CeilingFixtures />
         <NameSign />
         <Pendant z={-3.0} />
-        <ProjectCards />
         <Preload all />
       </Suspense>
       <CameraRig />

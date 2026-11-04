@@ -7,10 +7,19 @@ type State = {
   /** neon flicker level 0..1 while the lights are off */
   glow: number;
   modal: number | null;
+  /** which computer the visitor is sitting at, if any */
+  computer: Computer | null;
+  /** true while the desktop covers the screen, so the 3D scene can stop rendering */
+  osOpen: boolean;
+  setOsOpen: (v: boolean) => void;
   setProgress: (p: number) => void;
   toggleLights: () => void;
   openProject: (i: number | null) => void;
+  openComputer: (c: Computer) => void;
+  closeComputer: () => void;
 };
+
+export type Computer = "monitor" | "laptop";
 
 let timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -19,6 +28,11 @@ export const useHouse = create<State>((set, get) => ({
   lightsOn: true,
   glow: 0,
   modal: null,
+  computer: null,
+  osOpen: false,
+  setOsOpen: (osOpen) => set({ osOpen }),
+  openComputer: (computer) => set({ computer }),
+  closeComputer: () => set({ computer: null }),
   setProgress: (progress) => set({ progress }),
   toggleLights: () => {
     timers.forEach(clearTimeout);

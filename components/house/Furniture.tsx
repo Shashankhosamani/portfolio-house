@@ -3,7 +3,8 @@ import { useMemo } from "react";
 import { Model } from "./Model";
 import { W, zBack, zFront } from "./Shell";
 import { canvasTexture, rng, FONT_SERIF, FONT_SANS } from "./textures";
-import { Box, Table, Rug, BookStack, Bookshelf, Plaque, ArtPrint, CvPoster, Curtain, Console, Mug, Monitor, Laptop, Keyboard, SkillBins, DeskLamp } from "./Props";
+import { Box, Table, Rug, BookStack, Bookshelf, Plaque, ArtPrint, CvPoster, Curtain, Console, Mug, Keyboard, SkillBins, DeskLamp } from "./Props";
+import { Workstation, OpenLaptop } from "./Computer3D";
 import { STACK } from "@/lib/content";
 
 const R = Math.PI / 2;
@@ -39,6 +40,19 @@ function NightWindow({ z }: { z: number }) {
         <Box key={i} p={[a, b, 0.02]} s={[w, h, 0.06]} c="#E9E3D7" rough={0.4} />
       ))}
       <Box p={[0, -0.97, 0.08]} s={[1.5, 0.05, 0.2]} c="#E9E3D7" rough={0.4} />
+    </group>
+  );
+}
+
+function Envelopes({ x, z, y }: { x: number; z: number; y: number }) {
+  return (
+    <group position={[x, y, z]}>
+      {[[0, 0, 0.1], [0.04, 0.012, -0.2], [-0.03, 0.024, 0.35]].map(([a, b, r], i) => (
+        <mesh key={i} position={[a, b + 0.004, 0]} rotation={[-Math.PI / 2, 0, r]} castShadow>
+          <boxGeometry args={[0.24, 0.16, 0.008]} />
+          <meshStandardMaterial color={i === 1 ? "#D8CDB4" : "#EFE8D6"} roughness={0.9} />
+        </mesh>
+      ))}
     </group>
   );
 }
@@ -125,30 +139,31 @@ export function Furniture() {
       <Model name="AntiqueCamera" position={[2.55, 0, L0 - 0.75]} rotation={[0, -2.3, 0]} scale={0.2} />
 
       {/* ───── STUDIO ───── */}
-      {/* back wall: project pegboard (ProjectCards.tsx) over a workbench, skill bins to the right */}
-      <Table x={-1.1} z={S + 0.45} w={3.6} d={0.7} h={0.92} top="#8A6A48" legs="#33302C" />
-      <Box p={[-1.1, 0.25, S + 0.45]} s={[3.4, 0.03, 0.6]} c="#5E4A36" />
-      <DeskLamp p={[-2.6, 0.92, S + 0.4]} r={0.4} />
-      <Model name="WaterBottle" position={[0.3, 0.92 + 0.13, S + 0.4]} scale={1} />
-      <BookStack p={[-0.4, 0.92, S + 0.42]} seed={30} n={3} r={-0.2} />
-      <Box p={[-1.6, 0.98, S + 0.42]} s={[0.42, 0.12, 0.22]} c="#A3271D" rough={0.4} metal={0.3} />
-      <Box p={[-1.6, 1.05, S + 0.42]} s={[0.2, 0.02, 0.04]} c="#1A1A1A" />
-      <BookStack p={[-1.1, 0.25, S + 0.45]} seed={31} n={4} />
-      <Model name="ChairDamaskPurplegold" position={[-0.9, 0, S + 1.55]} rotation={[0, Math.PI + 0.25, 0]} scale={1.05} />
+      {/* back wall: the workstation — its monitor holds the projects (Computer3D.tsx) */}
+      <Table x={-0.6} z={S + 0.5} w={2.5} d={0.8} h={0.76} top="#6E5038" legs="#2A2622" />
+      <Workstation p={[-0.6, 0.76, S + 0.3]} />
+      <Keyboard p={[-0.6, 0.76, S + 0.72]} />
+      <Box p={[-0.12, 0.765, S + 0.74]} s={[0.07, 0.025, 0.11]} c="#2A2B2E" rough={0.5} />
+      <Mug p={[0.3, 0.76, S + 0.6]} color="#C8FF5A" />
+      <DeskLamp p={[-1.6, 0.76, S + 0.35]} r={0.5} />
+      <BookStack p={[0.42, 0.76, S + 0.3]} seed={30} n={4} r={-0.2} />
+      <Model name="WaterBottle" position={[-1.35, 0.76 + 0.13, S + 0.65]} scale={1} />
+      <Model name="ChairDamaskPurplegold" position={[-0.6, 0, S + 1.45]} rotation={[0, Math.PI + 0.15, 0]} scale={1.05} />
+      <ArtPrint p={[-0.6, 2.3, S + 0.09]} w={1.6} h={0.62} seed={23} palette={["#141A14", "#C8FF5A", "#2F4A5A", "#E9E1CF"]} />
       <SkillBins p={[2.3, 0.95, S + 0.2]} skills={STACK} />
+      <Model name="DiffuseTransmissionPlant" position={[-2.7, 0, S + 0.5]} scale={1.2} />
 
-      {/* left wall: the contact desk */}
+      {/* left wall: the contact desk, with a laptop that opens Mail */}
       <Mural p={[-W / 2 + 0.09, 2.3, zFront(1) - 3.2]} r={R} />
       <Table x={-3.08} z={zFront(1) - 3.2} w={0.75} d={1.9} h={0.76} />
-      <Monitor p={[-3.22, 0.76, zFront(1) - 3.25]} r={R} />
-      <Keyboard p={[-2.92, 0.76, zFront(1) - 3.25]} r={R} />
-      <Laptop p={[-3.05, 0.76, zFront(1) - 2.55]} r={R + 0.35} />
-      <Mug p={[-2.9, 0.76, zFront(1) - 3.8]} color="#C8FF5A" />
-      <DeskLamp p={[-3.25, 0.76, zFront(1) - 3.95]} r={-R} />
+      <OpenLaptop p={[-3.0, 0.76, zFront(1) - 3.2]} r={R} scale={1.5} />
+      <Mug p={[-2.9, 0.76, zFront(1) - 3.85]} color="#E9E2D0" />
+      <DeskLamp p={[-3.25, 0.76, zFront(1) - 2.45]} r={-R} />
+      <Envelopes x={-3.05} y={0.76} z={zFront(1) - 3.95} />
       <Model name="SheenChair" position={[-2.3, 0, zFront(1) - 3.2]} rotation={[0, -R, 0]} scale={1.05} />
       <PostBox x={-3.0} z={zFront(1) - 1.0} />
-      <Model name="DiffuseTransmissionPlant" position={[-3.0, 0, S + 0.6]} scale={1.15} />
       <Rug x={-2.3} z={zFront(1) - 3.2} w={2.0} d={2.4} colors={["#2F3A4A", "#D9B98A", "#1E2530"]} />
+      <Rug x={-0.6} z={S + 1.4} w={2.6} d={1.8} colors={["#3A2E28", "#C8B48E", "#201A16"]} />
 
       {/* right wall: leather sofa for visitors */}
       <Model name="SheenWoodLeatherSofa" position={[2.95, 0, zFront(1) - 2.7]} rotation={[0, -R, 0]} scale={1} />

@@ -91,8 +91,9 @@ export function Lighting() {
       <Moonlight />
       <Accent p={[2.6, 2.45, -3.2]} color="#FFD3A0" intensity={6} dimmable />
       <RoomLight j={1} intensity={38} color="#FFE7C8" />
-      <Accent p={[-2.4, 1.3, -9.2]} color="#B8D4FF" intensity={2.5} />
-      <Accent p={[-2.4, 1.6, -11.2]} color="#FFD9A0" intensity={2.5} />
+      <Accent p={[-2.5, 1.5, -9.2]} color="#FFD9A0" intensity={2.5} />
+      <Accent p={[-0.6, 1.4, -11.2]} color="#B8D4FF" intensity={2} />
+      <Accent p={[-1.6, 1.6, -11.4]} color="#FFD9A0" intensity={2} />
     </>
   );
 }
