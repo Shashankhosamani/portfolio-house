@@ -1,12 +1,11 @@
 # Shashank Hosamani — portfolio house
 
-A walk-through 3D portfolio in two furnished rooms. Scrolling moves the camera between four stops:
+A walkable 3D portfolio. You steer a little robot (standing in for Shashank) around a two-room house and use things:
 
-- **Living room · Home**: the name sign over a media console (pull the lamp cord for neon).
-- **Living room · About**: the reading-corner wall with the CV poster, plaques and bookshelves.
-- **Studio · Workshop**: the workstation. Click its monitor to sit down at "ShashankOS": project windows, a terminal (`help`, `projects`, `open costiq`…), Mail and Skills.
-- **Studio · Contact**: the laptop desk and post box. The laptop opens the same computer in Mail.
-- **The printer** (on the cabinet under the skill bins): click it, press "Print my resume", or type `print` in the terminal. The real first page of the resume rolls out, then a card offers the PDF download.
+- **Living room**: pull the lamp cord (lights off turns the name into neon), dance to the boombox, sit in the armchair to read About.
+- **Studio**: sit at the workstation to use "ShashankOS" (project windows, a terminal, Mail), print the resume on the printer, write from the laptop, post a letter at the post box (Contact).
+
+Controls: WASD/arrows to walk, Shift to run, click or tap the floor to walk there, click a thing (or press E nearby) to use it, drag to turn the camera, Space to jump. The top buttons walk the robot to each spot.
 
 Built with Next.js (static export), React Three Fiber, drei and postprocessing.
 
@@ -34,7 +33,11 @@ Add `?lite` to the URL to force the lighter rendering mode that phones get (no a
 | Room size, colours, doors, walls | `components/house/Shell.tsx` |
 | Furniture placement | `components/house/Furniture.tsx` |
 | Hand-built props (monitor, laptop, bins, curtains, art…) | `components/house/Props.tsx` |
-| Camera stops | `STOPS` in `components/house/Scene.tsx` |
+| Follow camera, wall fading, prompts | `components/house/Scene.tsx` |
+| The robot: animation, movement, sitting | `components/house/Character.tsx` |
+| What happens at each spot | `arrive()` in `lib/player.ts` |
+| Walkable floor, obstacles, pathfinding, spots | `lib/nav.ts` (keep in step with `Furniture.tsx`) |
+| Boombox music and printer sound (Web Audio) | `lib/sound.ts` |
 | Name sign, lamp and pull cord | `components/house/Home.tsx` |
 | Clickable monitor and laptop screens | `components/house/Computer3D.tsx` |
 | The in-computer desktop (windows, terminal, mail) | `components/os/Computer.tsx` |
@@ -49,7 +52,13 @@ pdftoppm -f 1 -l 1 -r 110 -jpeg -singlefile public/Shashank_Hosamani_Resume.pdf 
 | Camera walk and post-processing | `components/house/Scene.tsx` |
 | Overlay UI, popup, loader | `components/Experience.tsx` |
 
+## Swapping the robot for a person
+
+The character is any glTF with named animation clips. To use a human, make one on [Mixamo](https://www.mixamo.com) (free Adobe account), download it with Idle, Walking, Running, Sitting, Wave, Thumbs Up and Dancing clips, merge them into one `.glb`, put it in `public/models/`, then change `URL`, `SCALE` and the clip names in `components/house/Character.tsx`.
+
 ## 3D model credits
+
+- Robot character (RobotExpressive): Tomás Laulhé (Quaternius), CC0, via the three.js examples
 
 Models come from the [Khronos glTF Sample Assets](https://github.com/KhronosGroup/glTF-Sample-Assets) collection, with textures resized to 1024px WebP.
 

@@ -3,7 +3,9 @@ import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer } from "@react-three/drei";
 import * as THREE from "three";
-import { useHouse, walk } from "@/lib/store";
+import { useHouse } from "@/lib/store";
+import { player } from "@/lib/player";
+import { roomOf } from "@/lib/nav";
 import { zFront, zBack, H } from "./Shell";
 
 /** One warm ceiling light per room. Shadows are only cast in the room you're in and the next one. */
@@ -13,8 +15,8 @@ function RoomLight({ j, x = 0, y = H - 0.3, intensity = 34, color = "#FFD9A8", d
   const zc = (zFront(j) + zBack(j)) / 2;
   const { scene } = useThree();
   useFrame((_, dt) => {
-    const { progress, lightsOn } = useHouse.getState();
-    const { room } = walk(progress);
+    const { lightsOn } = useHouse.getState();
+    const room = roomOf(player.z);
     const on = dimmable && !lightsOn ? 0.015 : 1;
     if (spot.current) {
       spot.current.intensity = THREE.MathUtils.damp(spot.current.intensity, intensity * on, 14, dt);
@@ -56,8 +58,8 @@ function Ambient() {
   const h = useRef<THREE.HemisphereLight>(null);
   const { scene } = useThree();
   useFrame((_, dt) => {
-    const { lightsOn, progress } = useHouse.getState();
-    const inHome = walk(progress).room === 0;
+    const { lightsOn } = useHouse.getState();
+    const inHome = roomOf(player.z) === 0;
     const dark = !lightsOn && inHome;
     if (h.current) h.current.intensity = THREE.MathUtils.damp(h.current.intensity, dark ? 0.04 : 0.45, 10, dt);
     scene.environmentIntensity = THREE.MathUtils.damp(scene.environmentIntensity ?? 1, dark ? 0.05 : 0.55, 10, dt);

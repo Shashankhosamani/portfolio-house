@@ -14,6 +14,23 @@ type State = {
   setOsOpen: (v: boolean) => void;
   /** the resume printer: idle → printing → done (paper in the tray) */
   printState: "idle" | "printing" | "done";
+  /** info sheet shown over the scene */
+  panel: Panel | null;
+  setPanel: (p: Panel | null) => void;
+  /** nearest thing the character can use, for the on-screen prompt */
+  nearby: string | null;
+  setNearby: (id: string | null) => void;
+  /** which room the character is in: 0 living room, 1 studio */
+  room: number;
+  setRoom: (r: number) => void;
+  /** short status, e.g. "Reading" while seated */
+  activity: string | null;
+  setActivity: (a: string | null) => void;
+  music: boolean;
+  setMusic: (on: boolean) => void;
+  /** the controls hint stays until the visitor first moves */
+  moved: boolean;
+  setMoved: () => void;
   printAt: number;
   startPrint: () => void;
   finishPrint: () => void;
@@ -26,6 +43,7 @@ type State = {
 };
 
 export type Computer = "monitor" | "laptop";
+export type Panel = "home" | "about" | "workshop" | "contact";
 
 let timers: ReturnType<typeof setTimeout>[] = [];
 
@@ -37,6 +55,21 @@ export const useHouse = create<State>((set, get) => ({
   computer: null,
   osOpen: false,
   setOsOpen: (osOpen) => set({ osOpen }),
+  panel: "home",
+  setPanel: (panel) => set({ panel }),
+  nearby: null,
+  setNearby: (nearby) => set({ nearby }),
+  room: 0,
+  setRoom: (room) => set({ room }),
+  activity: null,
+  setActivity: (activity) => set({ activity }),
+  music: false,
+  setMusic: (music) => {
+    set({ music });
+    import("./sound").then((m) => (music ? m.startMusic() : m.stopMusic())).catch(() => {});
+  },
+  moved: false,
+  setMoved: () => { if (!get().moved) set({ moved: true }); },
   printState: "idle",
   printAt: 0,
   startPrint: () => {

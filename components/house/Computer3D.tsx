@@ -4,7 +4,8 @@ import { useFrame } from "@react-three/fiber";
 import { useCursor } from "@react-three/drei";
 import * as THREE from "three";
 import { PROJECTS } from "@/lib/content";
-import { useHouse, type Computer } from "@/lib/store";
+import { type Computer } from "@/lib/store";
+import { use } from "@/lib/player";
 import { canvasTexture, drawSvg, FONT_MONO, FONT_SANS } from "./textures";
 import { Box } from "./Props";
 import { screens } from "./screens";
@@ -35,7 +36,7 @@ function desktopTexture() {
     });
     // big "click to open" pill
     ctx.fillStyle = "#C8FF5A"; ctx.beginPath(); ctx.roundRect(w / 2 - 170, h - 150, 340, 64, 32); ctx.fill();
-    ctx.fillStyle = "#0A0A0A"; ctx.font = `700 26px ${FONT_SANS}`; ctx.fillText("Click to sit down  →", w / 2, h - 108);
+    ctx.fillStyle = "#0A0A0A"; ctx.font = `700 26px ${FONT_SANS}`; ctx.fillText("Sit down to use it  →", w / 2, h - 108);
     ctx.fillStyle = "rgba(236,233,226,.12)"; ctx.beginPath(); ctx.roundRect(w / 2 - 220, h - 64, 440, 50, 14); ctx.fill();
   });
   PROJECTS.forEach((p, i) => drawSvg(tex, p.thumb, 90 + i * 150 - 52, 110, 104, 70));
@@ -61,7 +62,6 @@ function Screen({ kind, w, h, tex }: { kind: Computer; w: number; h: number; tex
   const mat = useRef<THREE.MeshStandardMaterial>(null);
   const [hover, setHover] = useState(false);
   useCursor(hover);
-  const open = useHouse((s) => s.openComputer);
   useEffect(() => {
     if (mesh.current) screens[kind] = mesh.current;
     return () => { delete screens[kind]; };
@@ -73,7 +73,7 @@ function Screen({ kind, w, h, tex }: { kind: Computer; w: number; h: number; tex
   });
   return (
     <mesh ref={mesh}
-      onClick={(e) => { e.stopPropagation(); open(kind); }}
+      onClick={(e) => { e.stopPropagation(); use(kind === "monitor" ? "computer" : "laptop"); }}
       onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
       onPointerOut={() => setHover(false)}>
       <planeGeometry args={[w, h]} />

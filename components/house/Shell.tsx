@@ -3,7 +3,7 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
-import { useHouse, walk } from "@/lib/store";
+import { player } from "@/lib/player";
 import { plaster } from "./textures";
 
 export const W = 7; // room width (x)
@@ -51,7 +51,7 @@ function Wall({ from, to, z, x, color, bumpMap, height = H, y0 = 0 }: {
   const pos: [number, number, number] = alongX ? [mid, y0 + height / 2, z!] : [x!, y0 + height / 2, mid];
   const size: [number, number, number] = alongX ? [len, height, T] : [T, height, len];
   return (
-    <mesh position={pos} receiveShadow castShadow>
+    <mesh position={pos} receiveShadow castShadow userData={{ occluder: true }}>
       <boxGeometry args={size} />
       <meshStandardMaterial color={color} roughness={0.92} bumpMap={bumpMap} bumpScale={0.6} />
     </mesh>
@@ -97,25 +97,25 @@ function DoorWall({ j, bumpMap }: { j: number; bumpMap: THREE.Texture }) {
   const l = dx - DOOR_W / 2, r = dx + DOOR_W / 2;
   const front = ROOM_LOOK[j], back = ROOM_LOOK[j + 1];
   const leaf = useRef<THREE.Group>(null);
-  useFrame(() => {
-    const { k, open } = walk(useHouse.getState().progress);
-    const a = k > 1 ? 1 : k === 1 ? open : 0;
-    if (leaf.current) leaf.current.rotation.y = THREE.MathUtils.damp(leaf.current.rotation.y, a * 1.75, 10, 1 / 60);
+  // the door swings open as the character walks up to it, and closes behind
+  useFrame((_, dt) => {
+    const near = Math.hypot(player.x - dx, player.z - z) < 2.0;
+    if (leaf.current) leaf.current.rotation.y = THREE.MathUtils.damp(leaf.current.rotation.y, near ? 1.75 : 0, 6, Math.min(dt, 0.05));
   });
   return (
     <group>
       {/* the two faces of the partition take each room's colour */}
       {[{ c: front.wall, off: T / 4 }, { c: back.wall, off: -T / 4 }].map(({ c, off }, i) => (
         <group key={i} position={[0, 0, off]}>
-          <mesh position={[(-W / 2 + l) / 2, H / 2, z]} receiveShadow castShadow>
+          <mesh position={[(-W / 2 + l) / 2, H / 2, z]} receiveShadow castShadow userData={{ occluder: true }}>
             <boxGeometry args={[l + W / 2, H, T / 2]} />
             <meshStandardMaterial color={c} roughness={0.92} bumpMap={bumpMap} bumpScale={0.6} />
           </mesh>
-          <mesh position={[(r + W / 2) / 2, H / 2, z]} receiveShadow castShadow>
+          <mesh position={[(r + W / 2) / 2, H / 2, z]} receiveShadow castShadow userData={{ occluder: true }}>
             <boxGeometry args={[W / 2 - r, H, T / 2]} />
             <meshStandardMaterial color={c} roughness={0.92} bumpMap={bumpMap} bumpScale={0.6} />
           </mesh>
-          <mesh position={[dx, (DOOR_H + H) / 2, z]} receiveShadow>
+          <mesh position={[dx, (DOOR_H + H) / 2, z]} receiveShadow userData={{ occluder: true }}>
             <boxGeometry args={[DOOR_W, H - DOOR_H, T / 2]} />
             <meshStandardMaterial color={c} roughness={0.92} bumpMap={bumpMap} bumpScale={0.6} />
           </mesh>

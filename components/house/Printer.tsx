@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useCursor, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { useHouse } from "@/lib/store";
+import { use } from "@/lib/player";
 import { Box } from "./Props";
 import { canvasTexture, FONT_MONO } from "./textures";
 import { spots } from "./screens";
@@ -29,7 +30,6 @@ export function Printer({ p, r = 0 }: { p: [number, number, number]; r?: number 
   const screen = useRef<THREE.MeshBasicMaterial>(null);
   const [hover, setHover] = useState(false);
   useCursor(hover);
-  const start = useHouse((s) => s.startPrint);
   const page = useTexture("textures/resume-page.jpg");
   page.colorSpace = THREE.SRGBColorSpace;
   page.anisotropy = 8;
@@ -71,7 +71,7 @@ export function Printer({ p, r = 0 }: { p: [number, number, number]; r?: number 
   return (
     <group ref={group} position={p} rotation-y={r}>
       <group ref={body}
-        onClick={(e) => { e.stopPropagation(); start(); }}
+        onClick={(e) => { e.stopPropagation(); use("printer"); }}
         onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
         onPointerOut={() => setHover(false)}>
         {/* main body: lower chassis, darker top lid */}

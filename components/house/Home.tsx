@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { Text3D, Center, useCursor } from "@react-three/drei";
 import * as THREE from "three";
 import { useHouse } from "@/lib/store";
+import { use } from "@/lib/player";
 import { zBack } from "./Shell";
 import { canvasTexture, FONT_MONO } from "./textures";
 
@@ -51,9 +52,11 @@ export function Pendant({ z }: { z: number }) {
   useCursor(hover);
   const cord = useRef<THREE.Group>(null);
   const bulb = useRef<THREE.MeshStandardMaterial>(null);
-  const toggle = useHouse((s) => s.toggleLights);
   const tug = useRef(0);
+  const lastOn = useRef(true);
   useFrame((_, dt) => {
+    const isOn = useHouse.getState().lightsOn;
+    if (isOn !== lastOn.current) { lastOn.current = isOn; tug.current = 1; }
     tug.current = Math.max(0, tug.current - dt * 5);
     if (cord.current) cord.current.position.y = -Math.sin(tug.current * Math.PI) * 0.08;
     const on = useHouse.getState().lightsOn;
@@ -89,7 +92,7 @@ export function Pendant({ z }: { z: number }) {
           <meshStandardMaterial color="#C8FF5A" emissive="#C8FF5A" emissiveIntensity={0.15} />
         </mesh>
         <mesh position={[0, y - 0.45, 0]} visible={false}
-          onClick={(e) => { e.stopPropagation(); tug.current = 1; toggle(); }}
+          onClick={(e) => { e.stopPropagation(); use("lamp"); }}
           onPointerOver={(e) => { e.stopPropagation(); setHover(true); }}
           onPointerOut={() => setHover(false)}>
           <boxGeometry args={[0.25, 0.5, 0.25]} />

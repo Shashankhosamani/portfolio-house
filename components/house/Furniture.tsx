@@ -7,6 +7,16 @@ import { Box, Table, Rug, BookStack, Bookshelf, Plaque, ArtPrint, CvPoster, Curt
 import { Workstation, OpenLaptop } from "./Computer3D";
 import { Printer, PrinterCabinet } from "./Printer";
 import { STACK } from "@/lib/content";
+import { use } from "@/lib/player";
+import type { HotspotId } from "@/lib/nav";
+import type { ReactNode } from "react";
+import type { ThreeEvent } from "@react-three/fiber";
+
+/** Wrap furniture so clicking it sends the character over to use it. */
+function Usable({ id, children }: { id: HotspotId; children: ReactNode }) {
+  const go = (e: ThreeEvent<MouseEvent>) => { if (e.delta > 6) return; e.stopPropagation(); use(id); };
+  return <group onClick={go} onPointerOver={() => (document.body.style.cursor = "pointer")} onPointerOut={() => (document.body.style.cursor = "")}>{children}</group>;
+}
 
 const R = Math.PI / 2;
 
@@ -102,7 +112,7 @@ export function Furniture() {
       {/* ───── LIVING ROOM ───── */}
       {/* back wall: name sign (Home.tsx) over a media console */}
       <Console p={[-0.75, 0, zBack(0) + 0.3]} w={2.4} />
-      <Model name="BoomBox" position={[-1.6, 0.47 + 0.22, zBack(0) + 0.3]} rotation={[0, 0.25, 0]} scale={22} />
+      <Usable id="boombox"><Model name="BoomBox" position={[-1.6, 0.47 + 0.22, zBack(0) + 0.3]} rotation={[0, 0.25, 0]} scale={22} /></Usable>
       <BookStack p={[-0.55, 0.47, zBack(0) + 0.3]} seed={4} n={4} r={0.3} />
       <Model name="ToyCar" position={[0.1, 0.47 + 0.04, zBack(0) + 0.3]} rotation={[0, -0.6, 0]} scale={2.4} />
       <Model name="DiffuseTransmissionPlant" position={[-2.6, 0, zBack(0) + 0.45]} scale={1.3} />
@@ -132,7 +142,7 @@ export function Furniture() {
       <Plaque p={[W / 2 - 0.1, 2.0, L0 - 4.15]} r={-R} label="SHIPPED" title="Costiq v1" w={0.56} h={0.4} />
       <Plaque p={[W / 2 - 0.1, 1.38, L0 - 4.15]} r={-R} label="SINCE 2025" title="SDE I, OneCap" w={0.56} h={0.4} />
       <Model name="AnisotropyBarnLamp" position={[W / 2 - 0.08, 2.55, L0 - 3.2]} rotation={[0, -R, 0]} scale={1.6} />
-      <Model name="SheenChair" position={[2.55, 0, L0 - 3.2]} rotation={[0, -R, 0]} scale={1.05} />
+      <Usable id="armchair"><Model name="SheenChair" position={[2.55, 0, L0 - 3.2]} rotation={[0, -R, 0]} scale={1.05} /></Usable>
       <Table x={2.75} z={L0 - 2.3} w={0.45} d={0.45} h={0.55} />
       <Model name="DiffuseTransmissionTeacup" position={[2.72, 0.55, L0 - 2.25]} scale={1} />
       <BookStack p={[2.8, 0.55, L0 - 2.42]} seed={21} n={2} />
@@ -164,7 +174,7 @@ export function Furniture() {
       <DeskLamp p={[-3.25, 0.76, zFront(1) - 2.45]} r={-R} />
       <Envelopes x={-3.05} y={0.76} z={zFront(1) - 3.95} />
       <Model name="SheenChair" position={[-2.3, 0, zFront(1) - 3.2]} rotation={[0, -R, 0]} scale={1.05} />
-      <PostBox x={-3.0} z={zFront(1) - 1.0} />
+      <Usable id="postbox"><PostBox x={-3.0} z={zFront(1) - 1.0} /></Usable>
       <Rug x={-2.3} z={zFront(1) - 3.2} w={2.0} d={2.4} colors={["#2F3A4A", "#D9B98A", "#1E2530"]} />
       <Rug x={-0.6} z={S + 1.4} w={2.6} d={1.8} colors={["#3A2E28", "#C8B48E", "#201A16"]} />
 
