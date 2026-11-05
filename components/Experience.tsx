@@ -11,9 +11,9 @@ import PrintCard from "./PrintCard";
 const Scene = dynamic(() => import("./house/Scene"), { ssr: false });
 
 const NAV: { id: Panel; label: string; go: () => void }[] = [
-  { id: "home", label: "Home", go: () => { walkTo(0, -1.2); useHouse.getState().setPanel("home"); } },
+  { id: "home", label: "Home", go: () => { walkTo(0, -1.2, Math.PI); useHouse.getState().setPanel("home"); } },
   { id: "about", label: "About", go: () => use("armchair") },
-  { id: "workshop", label: "Workshop", go: () => { walkTo(-0.6, -9.95); useHouse.getState().setPanel("workshop"); } },
+  { id: "workshop", label: "Workshop", go: () => { walkTo(0.3, -8.6, Math.PI + 0.35); useHouse.getState().setPanel("workshop"); } },
   { id: "contact", label: "Contact", go: () => use("postbox") },
 ];
 
@@ -37,19 +37,19 @@ function PanelBody({ id, touch }: { id: Panel; touch: boolean }) {
     <>
       <span className="eyebrow">Portfolio · Bengaluru</span>
       <h1>Shashank <span className="serif">Hosamani</span></h1>
-      <p>Full-stack engineer building AI-powered fintech products. That&apos;s me, the robot. Walk around and use things: the computer holds my projects, the printer prints my resume.</p>
+      <p>Full-stack engineer building AI-powered fintech products. Welcome to my place. Walk around and use things: the computer holds my projects, the printer prints my resume.</p>
       <ul className="keys">
         {touch ? (
           <>
             <li><b>Tap the floor</b> to walk there</li>
-            <li><b>Tap a glowing marker</b> to use something</li>
+            <li><b>Tap a glowing marker</b> or object to use it</li>
             <li><b>Drag</b> to look around</li>
           </>
         ) : (
           <>
-            <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or arrows to walk, <kbd>Shift</kbd> to run</li>
-            <li><b>Click the floor</b> to walk there, <b>click a thing</b> to use it</li>
-            <li><kbd>E</kbd> to use what&apos;s nearby, <b>drag</b> to look around</li>
+            <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to walk, <kbd>←</kbd><kbd>→</kbd> to turn, <kbd>Shift</kbd> to run</li>
+            <li><b>Drag</b> to look around, <b>click the floor</b> to walk there</li>
+            <li><b>Click a thing</b> or press <kbd>E</kbd> near it to use it</li>
           </>
         )}
       </ul>
@@ -96,7 +96,7 @@ function PanelBody({ id, touch }: { id: Panel; touch: boolean }) {
       <details className="credits">
         <summary>3D model credits</summary>
         <ul>{CREDITS.map((c) => <li key={c.what}>{c.what}: {c.who}, {c.license}</li>)}</ul>
-        <p>Robot character by Tomás Laulhé (Quaternius), CC0, via the three.js examples. Furniture from the Khronos glTF Sample Assets collection.</p>
+        <p>Furniture from the Khronos glTF Sample Assets collection.</p>
       </details>
     </>
   );
@@ -173,9 +173,9 @@ export default function Experience() {
         </aside>
       )}
 
-      {!seated && activity && <div className="activity">{activity} · {touch ? "tap ✕ or walk" : "Esc or move"} to get up</div>}
+      {!seated && activity && <div className="activity">{activity} · {touch ? "tap the floor" : "Esc or move"} to get up</div>}
       {!seated && !panel && !moved && (
-        <div className="hint on">{touch ? "Tap the floor to walk · tap the glowing markers" : "WASD or click the floor to walk · E to use things"}</div>
+        <div className="hint on">{touch ? "Tap the floor to walk · drag to look · tap glowing markers" : "WASD to walk · drag to look · E to use things"}</div>
       )}
       <Loader />
       <ComputerOS />

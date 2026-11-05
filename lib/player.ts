@@ -18,9 +18,12 @@ export const player = {
   run: false,
   /** one-shot gesture request for the animator */
   gesture: null as null | "Wave" | "ThumbsUp" | "Jump" | "Yes" | "No",
+  /** turn to face this way (0 = +z) when a walk ends */
+  faceOnArrive: null as number | null,
 };
 
-export function walkTo(x: number, z: number) {
+export function walkTo(x: number, z: number, faceAngle: number | null = null) {
+  player.faceOnArrive = faceAngle;
   if (player.mode === "seated") standUp();
   if (player.mode === "dancing" || player.mode === "busy") player.mode = "free";
   player.pending = null;
