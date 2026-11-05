@@ -6,7 +6,7 @@ import { canvasTexture, rng, FONT_SERIF, FONT_SANS } from "./textures";
 import { Box, Table, Rug, BookStack, Bookshelf, Plaque, ArtPrint, CvPoster, Curtain, Console, Mug, Keyboard, SkillBins, DeskLamp } from "./Props";
 import { Workstation, OpenLaptop } from "./Computer3D";
 import { Printer, PrinterCabinet } from "./Printer";
-import { STACK } from "@/lib/content";
+import { STACK, PROFILE } from "@/lib/content";
 import { use } from "@/lib/player";
 import type { HotspotId } from "@/lib/nav";
 import type { ReactNode } from "react";
@@ -137,10 +137,9 @@ export function Furniture() {
       <Bookshelf p={[W / 2 - 0.2, 0, L0 - 1.2]} rot={-R} seed={7} />
       <Bookshelf p={[W / 2 - 0.2, 0, L0 - 5.15]} rot={-R} seed={13} />
       <CvPoster p={[W / 2 - 0.09, 1.62, L0 - 3.2]} r={-R} />
-      <Plaque p={[W / 2 - 0.1, 2.0, L0 - 2.25]} r={-R} label="FRAMED" title="IEEE paper" w={0.56} h={0.4} />
-      <Plaque p={[W / 2 - 0.1, 1.38, L0 - 2.25]} r={-R} label="B.TECH CSE" title="PES · 8.27" w={0.56} h={0.4} />
-      <Plaque p={[W / 2 - 0.1, 2.0, L0 - 4.15]} r={-R} label="SHIPPED" title="Costiq v1" w={0.56} h={0.4} />
-      <Plaque p={[W / 2 - 0.1, 1.38, L0 - 4.15]} r={-R} label="SINCE 2025" title="SDE I, OneCap" w={0.56} h={0.4} />
+      {PROFILE.plaques.slice(0, 4).map((pl, i) => (
+        <Plaque key={pl.title} p={[W / 2 - 0.1, i % 2 ? 1.38 : 2.0, L0 - (i < 2 ? 2.25 : 4.15)]} r={-R} label={pl.label} title={pl.title} w={0.56} h={0.4} />
+      ))}
       <Model name="AnisotropyBarnLamp" position={[W / 2 - 0.08, 2.55, L0 - 3.2]} rotation={[0, -R, 0]} scale={1.6} />
       <Usable id="armchair"><Model name="SheenChair" position={[2.55, 0, L0 - 3.2]} rotation={[0, -R, 0]} scale={1.05} /></Usable>
       <Table x={2.75} z={L0 - 2.3} w={0.45} d={0.45} h={0.55} />

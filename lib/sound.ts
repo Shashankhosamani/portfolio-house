@@ -99,3 +99,36 @@ export function stopMusic() {
   m.master.gain.exponentialRampToValueAtTime(0.0001, m.ctx.currentTime + 0.6);
   setTimeout(() => m.ctx.close().catch(() => {}), 800);
 }
+
+/* ───────── keyboard clicks for the terminal ───────── */
+let keyCtx: AudioContext | null = null;
+let keyNoise: AudioBuffer | null = null;
+
+/** A short mechanical-keyboard click. "enter" and "space" are deeper and heavier. */
+export function keyClick(kind: "key" | "space" | "enter" | "back" = "key") {
+  const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+  if (!AC) return;
+  if (!keyCtx) keyCtx = new AC();
+  const ctx = keyCtx;
+  if (ctx.state === "suspended") ctx.resume().catch(() => {});
+  if (!keyNoise) {
+    keyNoise = ctx.createBuffer(1, Math.floor(ctx.sampleRate * 0.05), ctx.sampleRate);
+    const d = keyNoise.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3);
+  }
+  const t = ctx.currentTime;
+  const heavy = kind === "enter" || kind === "space";
+  // the click: a burst of band-passed noise, pitch varied a little per key
+  const src = ctx.createBufferSource(); src.buffer = keyNoise;
+  src.playbackRate.value = (heavy ? 0.7 : 1) * (0.9 + Math.random() * 0.25);
+  const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = heavy ? 1800 : 3200 + Math.random() * 900; bp.Q.value = 0.9;
+  const g = ctx.createGain(); g.gain.setValueAtTime(heavy ? 0.5 : 0.35, t); g.gain.exponentialRampToValueAtTime(0.0001, t + (heavy ? 0.07 : 0.045));
+  src.connect(bp).connect(g).connect(ctx.destination);
+  src.start(t); src.stop(t + 0.08);
+  // the "thock": a tiny low body under the click
+  const o = ctx.createOscillator(); o.type = "sine";
+  o.frequency.setValueAtTime(heavy ? 150 : 230 + Math.random() * 40, t);
+  o.frequency.exponentialRampToValueAtTime(heavy ? 70 : 120, t + 0.04);
+  const og = ctx.createGain(); og.gain.setValueAtTime(heavy ? 0.22 : 0.1, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.06);
+  o.connect(og).connect(ctx.destination); o.start(t); o.stop(t + 0.07);
+}

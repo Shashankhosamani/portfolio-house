@@ -4,6 +4,7 @@ import { useFrame } from "@react-three/fiber";
 import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { player } from "@/lib/player";
+import { onFloorClick } from "./floorClick";
 import { plaster } from "./textures";
 
 export const W = 7; // room width (x)
@@ -171,7 +172,7 @@ export function Shell() {
         const zc = (zFront(j) + zBack(j)) / 2;
         return (
           <group key={j}>
-            <mesh rotation-x={-Math.PI / 2} position={[0, 0, zc]} receiveShadow>
+            <mesh rotation-x={-Math.PI / 2} position={[0, 0, zc]} receiveShadow onClick={onFloorClick}>
               <planeGeometry args={[W, D]} />
               <meshStandardMaterial map={floor.map} bumpMap={floor.bump} bumpScale={0.4} roughnessMap={floor.rough} roughness={0.75} color={j === 1 ? "#b8aca2" : "#ffffff"} />
             </mesh>

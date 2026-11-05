@@ -2,7 +2,8 @@
 import { useMemo } from "react";
 import * as THREE from "three";
 import { canvasTexture, rng, FONT_MONO, FONT_SERIF, FONT_SANS } from "./textures";
-import { TIMELINE } from "@/lib/content";
+import { TIMELINE, PROFILE, EMAIL } from "@/lib/content";
+import { onFloorClick } from "./floorClick";
 
 export const WOOD = "#7A5A40";
 export const WOOD_DARK = "#4E3828";
@@ -39,7 +40,7 @@ export function Rug({ x, z, w, d, colors, rot = 0 }: { x: number; z: number; w: 
     for (let i = 0; i < 9000; i++) { ctx.fillStyle = `rgba(0,0,0,${r() * 0.06})`; ctx.fillRect(r() * cw, r() * ch, 2, 2); }
   }), [w, d, colors]);
   return (
-    <mesh rotation={[-Math.PI / 2, 0, rot]} position={[x, 0.006, z]} receiveShadow>
+    <mesh rotation={[-Math.PI / 2, 0, rot]} position={[x, 0.006, z]} receiveShadow onClick={onFloorClick}>
       <planeGeometry args={[w, d]} />
       <meshStandardMaterial map={tex} roughness={1} />
     </mesh>
@@ -153,7 +154,7 @@ export function CvPoster({ p, r = 0 }: { p: V3; r?: number }) {
   const w = 0.78, h = 1.02;
   const tex = useMemo(() => canvasTexture(512, 670, (ctx, cw, ch) => {
     ctx.fillStyle = "#F2ECDD"; ctx.fillRect(0, 0, cw, ch);
-    ctx.fillStyle = "#141210"; ctx.font = `800 54px ${FONT_SANS}`; ctx.fillText("Shashank", 40, 92);
+    ctx.fillStyle = "#141210"; ctx.font = `800 54px ${FONT_SANS}`; ctx.fillText(PROFILE.firstName, 40, 92);
     ctx.fillStyle = "#4F7A1F"; ctx.font = `italic 44px ${FONT_SERIF}`; ctx.fillText("the path so far", 40, 140);
     let y = 210;
     for (const t of TIMELINE) {
@@ -236,12 +237,12 @@ function codeScreen(lines: [string, string][], title: string) {
 /** Desktop monitor showing a small "about me" object in TypeScript. */
 export function Monitor({ p, r = 0 }: { p: V3; r?: number }) {
   const tex = useMemo(() => codeScreen([
-    ["const shashank = {", "#E6E1D6"],
-    ['  role: "Full-stack engineer",', "#A8D8FF"],
-    ['  based: "Bengaluru, India",', "#A8D8FF"],
-    ['  now: "SDE I @ OneCap",', "#A8D8FF"],
+    [`const ${PROFILE.handle} = {`, "#E6E1D6"],
+    [`  role: "${PROFILE.role}",`, "#A8D8FF"],
+    [`  based: "${PROFILE.location}",`, "#A8D8FF"],
+    [`  now: "${PROFILE.title} @ ${PROFILE.company}",`, "#A8D8FF"],
     ['  builds: ["frontends", "APIs", "AI agents"],', "#C8FF5A"],
-    ['  email: "shashankhosamani1109@gmail.com",', "#FFC98A"],
+    [`  email: "${EMAIL}",`, "#FFC98A"],
     ["  openToWork: true,", "#FF9DB0"],
     ["};", "#E6E1D6"],
     ["", "#E6E1D6"],

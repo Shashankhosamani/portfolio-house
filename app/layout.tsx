@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { PROFILE } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Shashank Hosamani",
-  description: "Walk through Shashank Hosamani's house: a full-stack engineer in Bengaluru building AI-powered fintech products.",
+  title: `${PROFILE.firstName} ${PROFILE.lastName}`,
+  description: `Walk through ${PROFILE.firstName} ${PROFILE.lastName}'s house: ${PROFILE.intro}`,
 };
 
 export const viewport: Viewport = { themeColor: "#050505", viewportFit: "cover" };

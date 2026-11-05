@@ -1,3 +1,39 @@
+/**
+ * ─────────────────────────────────────────────────────────────
+ *  EVERYTHING ABOUT YOU LIVES IN THIS FILE.
+ *  Edit it and the whole house updates: the side panels, the
+ *  name on the wall, the plaques, the CV poster, the skill bins,
+ *  the computer's desktop, its windows and the terminal.
+ *  (If you replace the resume PDF, see README for the one command
+ *  that regenerates the printed-page image.)
+ * ─────────────────────────────────────────────────────────────
+ */
+export const PROFILE = {
+  firstName: "Shashank",
+  lastName: "Hosamani",
+  fullName: "Shashank L Hosamani",
+  handle: "shashank",          // used in the terminal prompt: shashank@studio
+  role: "Full-stack engineer",
+  location: "Bengaluru",
+  company: "OneCap",
+  title: "SDE I",
+  /** short line for the welcome sheet */
+  intro: "Full-stack engineer building AI-powered fintech products.",
+  /** About sheet paragraph */
+  about: "Full-stack engineer at OneCap in Bengaluru. I build frontends, APIs and AI agents for finance teams, and I like software that feels like a person made it.",
+  /** Contact sheet paragraph */
+  openTo: "I'm open to full-stack and AI product roles. If you're building in fintech, agents or developer tools, I'd like to hear about it.",
+  /** one-line summary printed on the resume card */
+  resumeSummary: "One page: experience at OneCap, projects, the IEEE paper and skills.",
+  /** framed plaques on the reading-corner wall (exactly four) */
+  plaques: [
+    { label: "FRAMED", title: "IEEE paper" },
+    { label: "B.TECH CSE", title: "PES · 8.27" },
+    { label: "SHIPPED", title: "Costiq v1" },
+    { label: "SINCE 2025", title: "SDE I, OneCap" },
+  ],
+};
+
 export const ROOMS = ["Home", "About", "Workshop", "Contact"] as const;
 
 export const EMAIL = "shashankhosamani1109@gmail.com";

@@ -5,7 +5,11 @@ A first-person 3D portfolio: you walk around a two-room house through Shashank's
 - **Living room**: pull the lamp cord (lights off turns the name into neon), play the boombox, sit in the armchair to read About.
 - **Studio**: sit at the workstation to use "ShashankOS" (project windows, a terminal, Mail), print the resume on the printer, write from the laptop, post a letter at the post box (Contact).
 
-Controls: W/S to walk, A/D to step sideways, ←/→ to turn, Shift to run, drag to look around, click or tap the floor to walk there, click a thing (or press E nearby) to use it. Sitting lowers the view to seated eye height. The top buttons walk you to each spot.
+Controls: W/S to walk, A/D to step sideways, ←/→ to turn, Shift to run, drag to look around, click or tap the floor to walk there, click a thing (or press E nearby) to use it, V (or the top button) to switch first/third person. First person shows your hands; third person shows a robot. The top buttons walk you to each spot.
+
+## Updating your details
+
+Everything about you (name, role, about text, plaques, timeline, skills, projects, links) is in **`lib/content.ts`**. Edit it and the panels, the name on the wall, the plaques, CV poster, skill bins, the computer and the terminal all update.
 
 Built with Next.js (static export), React Three Fiber, drei and postprocessing.
 
@@ -35,6 +39,8 @@ Add `?lite` to the URL to force the lighter rendering mode that phones get (no a
 | Hand-built props (monitor, laptop, bins, curtains, art…) | `components/house/Props.tsx` |
 | First-person camera, look, prompts | `components/house/Scene.tsx` |
 | Movement, collision, sitting, nearby detection | `components/house/Player.tsx` |
+| First-person hands | `components/house/Hands.tsx` |
+| Third-person robot | `components/house/Avatar.tsx` |
 | What happens at each spot | `arrive()` in `lib/player.ts` |
 | Walkable floor, obstacles, pathfinding, spots | `lib/nav.ts` (keep in step with `Furniture.tsx`) |
 | Boombox music and printer sound (Web Audio) | `lib/sound.ts` |
@@ -53,6 +59,8 @@ pdftoppm -f 1 -l 1 -r 110 -jpeg -singlefile public/Shashank_Hosamani_Resume.pdf 
 | Overlay UI, popup, loader | `components/Experience.tsx` |
 
 ## 3D model credits
+
+- Robot character (RobotExpressive): Tomás Laulhé (Quaternius), CC0, via the three.js examples
 
 
 Models come from the [Khronos glTF Sample Assets](https://github.com/KhronosGroup/glTF-Sample-Assets) collection, with textures resized to 1024px WebP.

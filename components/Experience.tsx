@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useProgress } from "@react-three/drei";
 import { useHouse, type Panel } from "@/lib/store";
 import { use, walkTo, standUp, player } from "@/lib/player";
-import { STACK, TIMELINE, EMAIL, LINKS, CREDITS } from "@/lib/content";
+import { STACK, TIMELINE, EMAIL, LINKS, CREDITS, PROFILE } from "@/lib/content";
 import ComputerOS from "./os/Computer";
 import PrintCard from "./PrintCard";
 
@@ -35,21 +35,22 @@ function CopyEmail() {
 function PanelBody({ id, touch }: { id: Panel; touch: boolean }) {
   if (id === "home") return (
     <>
-      <span className="eyebrow">Portfolio · Bengaluru</span>
-      <h1>Shashank <span className="serif">Hosamani</span></h1>
-      <p>Full-stack engineer building AI-powered fintech products. Welcome to my place. Walk around and use things: the computer holds my projects, the printer prints my resume.</p>
+      <span className="eyebrow">Portfolio · {PROFILE.location}</span>
+      <h1>{PROFILE.firstName} <span className="serif">{PROFILE.lastName}</span></h1>
+      <p>{PROFILE.intro} Welcome to my place. Walk around and use things: the computer holds my projects, the printer prints my resume.</p>
       <ul className="keys">
         {touch ? (
           <>
             <li><b>Tap the floor</b> to walk there</li>
             <li><b>Tap a glowing marker</b> or object to use it</li>
-            <li><b>Drag</b> to look around</li>
+            <li><b>Drag</b> to look around, and use the top button to switch first and third person</li>
           </>
         ) : (
           <>
             <li><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to walk, <kbd>←</kbd><kbd>→</kbd> to turn, <kbd>Shift</kbd> to run</li>
             <li><b>Drag</b> to look around, <b>click the floor</b> to walk there</li>
             <li><b>Click a thing</b> or press <kbd>E</kbd> near it to use it</li>
+            <li><kbd>V</kbd> or the button up top switches first and third person</li>
           </>
         )}
       </ul>
@@ -58,8 +59,8 @@ function PanelBody({ id, touch }: { id: Panel; touch: boolean }) {
   if (id === "about") return (
     <>
       <span className="eyebrow">(01) About</span>
-      <h2>Hi, I&apos;m Shashank.</h2>
-      <p>Full-stack engineer at OneCap in Bengaluru. I build frontends, APIs and AI agents for finance teams, and I like software that feels like a person made it.</p>
+      <h2>Hi, I&apos;m {PROFILE.firstName}.</h2>
+      <p>{PROFILE.about}</p>
       <ul className="tl">
         {TIMELINE.map((t) => <li key={t.what + t.when}><span>{t.when}</span><b>{t.what}</b><em>{t.where}</em></li>)}
       </ul>
@@ -82,7 +83,7 @@ function PanelBody({ id, touch }: { id: Panel; touch: boolean }) {
     <>
       <span className="eyebrow">(03) Contact</span>
       <h2>Let&apos;s make <span className="serif">something.</span></h2>
-      <p>I&apos;m open to full-stack and AI product roles. If you&apos;re building in fintech, agents or developer tools, I&apos;d like to hear about it.</p>
+      <p>{PROFILE.openTo}</p>
       <CopyEmail />
       <div className="cta-row">
         <button type="button" className="cta ghost" onClick={() => use("laptop")}>Write from the laptop →</button>
@@ -96,7 +97,7 @@ function PanelBody({ id, touch }: { id: Panel; touch: boolean }) {
       <details className="credits">
         <summary>3D model credits</summary>
         <ul>{CREDITS.map((c) => <li key={c.what}>{c.what}: {c.who}, {c.license}</li>)}</ul>
-        <p>Furniture from the Khronos glTF Sample Assets collection.</p>
+        <p>Robot by Tomás Laulhé (Quaternius), CC0. Furniture from the Khronos glTF Sample Assets collection.</p>
       </details>
     </>
   );
@@ -128,6 +129,8 @@ export default function Experience() {
   const setMusic = useHouse((s) => s.setMusic);
   const activity = useHouse((s) => s.activity);
   const moved = useHouse((s) => s.moved);
+  const view = useHouse((s) => s.view);
+  const toggleView = useHouse((s) => s.toggleView);
   const seated = useHouse((s) => s.computer !== null || s.printState !== "idle");
   const [quality, setQuality] = useState<"high" | "low" | null>(null);
   const [touch, setTouch] = useState(false);
@@ -156,11 +159,12 @@ export default function Experience() {
     <>
       <div className="canvas-wrap">{quality && <Scene quality={quality} />}</div>
       <header className="top" hidden={seated}>
-        <span className="brand"><span className="full">SHASHANK H.</span><span className="short">SH.</span></span>
+        <span className="brand"><span className="full">{PROFILE.firstName.toUpperCase()} {PROFILE.lastName[0]}.</span><span className="short">{PROFILE.firstName.slice(0, 2).toUpperCase()}.</span></span>
         <nav aria-label="Go to">
           {NAV.map((n) => (
             <button key={n.id} type="button" aria-current={n.id === here} onClick={n.go}>{n.label}</button>
           ))}
+          <button type="button" className="viewbtn" onClick={toggleView} title="Switch view (V)">{view === "first" ? "3rd person" : "1st person"}</button>
           <button type="button" className="lights" aria-pressed={!lightsOn} onClick={toggle}>{lightsOn ? "Lights off" : "Lights on"}</button>
           {music && <button type="button" className="lights" aria-pressed onClick={() => setMusic(false)}>Music off</button>}
         </nav>

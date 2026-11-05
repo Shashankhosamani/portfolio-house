@@ -31,6 +31,9 @@ type State = {
   /** the controls hint stays until the visitor first moves */
   moved: boolean;
   setMoved: () => void;
+  /** first person (your eyes, with hands) or third person (follow the robot) */
+  view: "first" | "third";
+  toggleView: () => void;
   printAt: number;
   startPrint: () => void;
   finishPrint: () => void;
@@ -67,6 +70,12 @@ export const useHouse = create<State>((set, get) => ({
   setMusic: (music) => {
     set({ music });
     import("./sound").then((m) => (music ? m.startMusic() : m.stopMusic())).catch(() => {});
+  },
+  view: (() => { try { return localStorage.getItem("house-view") === "third" ? "third" : "first"; } catch { return "first"; } })(),
+  toggleView: () => {
+    const view = get().view === "first" ? "third" : "first";
+    set({ view });
+    try { localStorage.setItem("house-view", view); } catch {}
   },
   moved: false,
   setMoved: () => { if (!get().moved) set({ moved: true }); },

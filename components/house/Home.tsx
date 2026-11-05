@@ -5,6 +5,7 @@ import { Text3D, Center, useCursor } from "@react-three/drei";
 import * as THREE from "three";
 import { useHouse } from "@/lib/store";
 import { use } from "@/lib/player";
+import { PROFILE } from "@/lib/content";
 import { zBack } from "./Shell";
 import { canvasTexture, FONT_MONO } from "./textures";
 
@@ -17,7 +18,7 @@ export function NameSign() {
   const subTex = useMemo(() => canvasTexture(1024, 80, (ctx, w, h) => {
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = "#ffffff"; ctx.font = `500 34px ${FONT_MONO}`; ctx.textAlign = "center";
-    ctx.fillText("F U L L - S T A C K   E N G I N E E R   ·   B E N G A L U R U", w / 2, 52);
+    ctx.fillText(`${PROFILE.role} · ${PROFILE.location}`.toUpperCase().split("").join(" "), w / 2, 52);
   }), []);
   useFrame((_, dt) => {
     const { lightsOn, glow } = useHouse.getState();
@@ -34,7 +35,7 @@ export function NameSign() {
     <group position={[-0.95, 1.62, z]}>
       <Center>
         <Text3D font="fonts/helvetiker_bold.typeface.json" size={0.5} height={0.11} bevelEnabled bevelSize={0.012} bevelThickness={0.02} bevelSegments={4} curveSegments={8} letterSpacing={-0.01} castShadow receiveShadow>
-          SHASHANK
+          {PROFILE.firstName.toUpperCase()}
           <meshStandardMaterial ref={mat} color="#E9E1CF" roughness={0.35} metalness={0.05} emissive={LIME} emissiveIntensity={0} toneMapped={false} />
         </Text3D>
       </Center>

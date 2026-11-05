@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useHouse } from "@/lib/store";
-import { PROJECTS, STACK, TIMELINE, EMAIL, LINKS } from "@/lib/content";
+import { PROJECTS, STACK, TIMELINE, EMAIL, LINKS, PROFILE } from "@/lib/content";
 
 type App = "projects" | "terminal" | "mail" | "skills" | `project:${number}`;
 type Win = { id: number; app: App; x: number; y: number; z: number };
@@ -79,7 +79,7 @@ function MailApp() {
         <span className="os-muted">To</span><span ref={ref} className="os-addr">{EMAIL}</span>
         <span className="os-muted">Subject</span><span>Let&apos;s make something</span>
       </div>
-      <p>Hi Shashank,<br /><br />I came across your portfolio and wanted to talk about…</p>
+      <p>Hi {PROFILE.firstName},<br /><br />I came across your portfolio and wanted to talk about…</p>
       <div className="os-actions">
         <a className="os-btn primary" href={`mailto:${EMAIL}?subject=${encodeURIComponent("Let's make something")}`}>Open in my mail app</a>
         <button type="button" className="os-btn" onClick={copy}>{label}</button>
@@ -97,7 +97,7 @@ function MailApp() {
 function TerminalApp({ open, leave }: { open: (a: App) => void; leave: () => void }) {
   const print = useHouse((s) => s.startPrint);
   const [lines, setLines] = useState<ReactNode[]>([
-    <span key="w">ShashankOS terminal. Type <b>help</b> to see what you can do.</span>,
+    <span key="w">{PROFILE.firstName}OS terminal. Type <b>help</b> to see what you can do.</span>,
   ]);
   const [value, setValue] = useState("");
   const [hist, setHist] = useState<string[]>([]);
@@ -111,7 +111,7 @@ function TerminalApp({ open, leave }: { open: (a: App) => void; leave: () => voi
     const cmd = raw.trim();
     const [c, ...rest] = cmd.split(/\s+/);
     const arg = rest.join(" ").toLowerCase();
-    const out: ReactNode[] = [<span key="p" className="t-prompt">shashank@studio ~ % <span className="t-cmd">{cmd}</span></span>];
+    const out: ReactNode[] = [<span key="p" className="t-prompt">{PROFILE.handle}@studio ~ % <span className="t-cmd">{cmd}</span></span>];
     const find = (q: string) => {
       const n = parseInt(q, 10);
       if (!isNaN(n) && PROJECTS[n - 1]) return n - 1;
@@ -143,7 +143,7 @@ exit            leave the computer`}</pre>);
         break;
       }
       case "whoami":
-        out.push(<span key="w">Shashank Hosamani · full-stack engineer at OneCap, Bengaluru. Frontends, APIs and AI agents for finance teams.</span>);
+        out.push(<span key="w">{PROFILE.firstName} {PROFILE.lastName} · {PROFILE.role}, {PROFILE.title} at {PROFILE.company}, {PROFILE.location}.</span>);
         break;
       case "skills":
         out.push(<span key="s">{STACK.join(" · ")}</span>);
@@ -152,13 +152,13 @@ exit            leave the computer`}</pre>);
         out.push(<span key="c">{EMAIL} · <a href={LINKS.github} target="_blank" rel="noopener">GitHub</a> · <a href={LINKS.linkedin} target="_blank" rel="noopener">LinkedIn</a></span>);
         break;
       case "print": case "lpr":
-        out.push(<span key="p" className="t-ok">Sending Shashank_Hosamani_Resume.pdf to the printer…</span>);
+        out.push(<span key="p" className="t-ok">Sending {LINKS.resume} to the printer…</span>);
         setLines((l) => [...l, ...out]);
         setTimeout(print, 600);
         setValue("");
         return;
       case "resume": case "cv":
-        out.push(<a key="r" href={LINKS.resume} target="_blank" rel="noopener">Shashank_Hosamani_Resume.pdf ↗</a>);
+        out.push(<a key="r" href={LINKS.resume} target="_blank" rel="noopener">{LINKS.resume} ↗</a>);
         break;
       case "sudo":
         out.push(arg.includes("hire") ? <span key="s" className="t-ok">Permission granted. Next step: {EMAIL}</span> : <span key="s" className="t-err">Nice try.</span>);
@@ -178,9 +178,12 @@ exit            leave the computer`}</pre>);
     <div className="os-term" onClick={() => input.current?.focus()}>
       {lines.map((l, i) => <div key={i} className="t-line">{l}</div>)}
       <form className="t-line t-input" onSubmit={(e) => { e.preventDefault(); run(value); }}>
-        <span className="t-prompt">shashank@studio ~ %</span>
+        <span className="t-prompt">{PROFILE.handle}@studio ~ %</span>
         <input id="os-terminal-input" ref={input} value={value} onChange={(e) => setValue(e.target.value)} autoComplete="off" autoCapitalize="off" spellCheck={false} aria-label="Terminal command"
           onKeyDown={(e) => {
+            if (!e.repeat && (e.key.length === 1 || e.key === "Enter" || e.key === "Backspace")) {
+              import("@/lib/sound").then((m) => m.keyClick(e.key === "Enter" ? "enter" : e.key === " " ? "space" : e.key === "Backspace" ? "back" : "key")).catch(() => {});
+            }
             if (e.key === "ArrowUp") { e.preventDefault(); const n = Math.min(hist.length - 1, hi + 1); if (hist[n]) { setHi(n); setValue(hist[n]); } }
             if (e.key === "ArrowDown") { e.preventDefault(); const n = hi - 1; setHi(n); setValue(n >= 0 ? hist[n] : ""); }
           }} />
@@ -291,9 +294,9 @@ export default function ComputerOS() {
   };
 
   return (
-    <div ref={root} tabIndex={-1} className={`os ${visible ? "on" : ""}`} role="dialog" aria-modal="true" aria-label="Shashank's computer">
+    <div ref={root} tabIndex={-1} className={`os ${visible ? "on" : ""}`} role="dialog" aria-modal="true" aria-label={`${PROFILE.firstName}'s computer`}>
       <header className="os-bar">
-        <span className="os-logo">ShashankOS</span>
+        <span className="os-logo">{PROFILE.firstName}OS</span>
         <span className="os-app">{activeTop ? title(activeTop.app) : "Desktop"}</span>
         <span className="os-spacer" />
         <span className="os-clock mono">{clock} IST</span>

@@ -18,6 +18,8 @@ export const player = {
   run: false,
   /** one-shot gesture request for the animator */
   gesture: null as null | "Wave" | "ThumbsUp" | "Jump" | "Yes" | "No",
+  /** the latest gesture, broadcast to the robot and the hands: id increments each time */
+  lastGesture: { name: "", id: 0 },
   /** turn to face this way (0 = +z) when a walk ends */
   faceOnArrive: null as number | null,
 };

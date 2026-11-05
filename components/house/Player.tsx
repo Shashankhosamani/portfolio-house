@@ -34,6 +34,8 @@ export function Player() {
       if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(k)) { player.keys.add(k); e.preventDefault(); }
       if (k === "shift") player.run = true;
       if (k === "e" && st.nearby) use(st.nearby as never);
+      if (k === "v") st.toggleView();
+      if (k === " " && player.mode !== "seated") { player.gesture = "Jump"; e.preventDefault(); }
     };
     const up = (e: KeyboardEvent) => { const k = e.key.toLowerCase(); player.keys.delete(k); if (k === "shift") player.run = false; };
     const blur = () => { player.keys.clear(); player.run = false; };
@@ -45,10 +47,12 @@ export function Player() {
     const dt = Math.min(rawDt, 0.05);
     const st = useHouse.getState();
     const k = player.keys;
+    if (player.gesture) { player.lastGesture = { name: player.gesture, id: player.lastGesture.id + 1 }; player.gesture = null; }
 
     // react to the outside world: leaving the computer, closing the About sheet, finishing a print
     if (prev.current.computer && !st.computer && player.mode === "seated") standUp();
     if (prev.current.panel === "about" && st.panel !== "about" && player.seat === hotspot("armchair").seat) standUp();
+    if (prev.current.print === "printing" && st.printState === "done") player.gesture = "ThumbsUp";
     if (st.printState === "idle" && player.mode === "busy") player.mode = "free";
     if (!st.music && player.mode === "dancing") player.mode = "free";
     prev.current.computer = st.computer; prev.current.panel = st.panel; prev.current.print = st.printState;
@@ -83,25 +87,25 @@ export function Player() {
       else {
         vx = (dx / d) * speed; vz = (dz / d) * speed;
         // look where we're going
-        const want = Math.atan2(-vx, -vz);
-        look.yawTarget = look.yaw + angDiff(look.yaw, want);
+        if (st.view === "first") look.yawTarget = look.yaw + angDiff(look.yaw, Math.atan2(-vx, -vz));
         look.pitchTarget += (-0.05 - look.pitchTarget) * Math.min(1, dt * 3);
       }
       st.setMoved();
     }
     if (!player.path.length && player.faceOnArrive !== null && !player.pending) {
-      face(player.faceOnArrive, -0.08);
+      if (st.view === "first") face(player.faceOnArrive, -0.08); else player.yaw = player.faceOnArrive;
       player.faceOnArrive = null;
     }
     if (ix || iz) player.faceOnArrive = null;
     if (!player.path.length && player.pending && !(ix || iz)) {
       const id = player.pending; player.pending = null;
       const h = hotspot(id);
-      face(h.seat ? h.seat[3] : h.face, id === "lamp" ? 0.45 : id === "boombox" ? -0.35 : id === "printer" ? -0.4 : -0.12);
+      if (st.view === "first") face(h.seat ? h.seat[3] : h.face, id === "lamp" ? 0.45 : id === "boombox" ? -0.35 : id === "printer" ? -0.4 : -0.12);
       arrive(id);
     }
 
     if (vx || vz) {
+      player.yaw += angDiff(player.yaw, Math.atan2(vx, vz)) * Math.min(1, dt * 12);
       const [nx, nz] = slide(player.x, player.z, vx * dt, vz * dt);
       player.speed = Math.hypot(nx - player.x, nz - player.z) / dt;
       player.x = nx; player.z = nz;

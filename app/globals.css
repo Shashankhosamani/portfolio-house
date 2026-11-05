@@ -323,3 +323,5 @@ kbd { display: inline-block; min-width: 22px; padding: 1px 6px; margin-right: 3p
     padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)); background: rgba(8,8,8,.92); }
   .hint { top: auto !important; bottom: calc(22px + env(safe-area-inset-bottom, 0px)); white-space: normal; text-align: center; width: max-content; max-width: calc(100vw - 32px); }
 }
+.top nav .viewbtn { border-color: var(--paper); }
+@media (max-width: 560px) { .top nav .viewbtn { order: 9; } }

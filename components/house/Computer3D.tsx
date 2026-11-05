@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useCursor } from "@react-three/drei";
 import * as THREE from "three";
-import { PROJECTS } from "@/lib/content";
+import { PROJECTS, PROFILE, EMAIL, LINKS } from "@/lib/content";
 import { type Computer } from "@/lib/store";
 import { use } from "@/lib/player";
 import { canvasTexture, drawSvg, FONT_MONO, FONT_SANS } from "./textures";
@@ -17,7 +17,7 @@ function desktopTexture() {
     g.addColorStop(0, "#2B3A1A"); g.addColorStop(0.45, "#141A14"); g.addColorStop(1, "#08090A");
     ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
     ctx.fillStyle = "rgba(10,10,10,.75)"; ctx.fillRect(0, 0, w, 38);
-    ctx.fillStyle = "#ECE9E2"; ctx.font = `600 20px ${FONT_SANS}`; ctx.fillText("ShashankOS", 22, 26);
+    ctx.fillStyle = "#ECE9E2"; ctx.font = `600 20px ${FONT_SANS}`; ctx.fillText(`${PROFILE.firstName}OS`, 22, 26);
     ctx.fillStyle = "#A9A49B"; ctx.font = `400 18px ${FONT_MONO}`; ctx.fillText("Projects", 170, 26);
     ctx.textAlign = "center";
     PROJECTS.forEach((p, i) => {
@@ -48,9 +48,9 @@ function terminalTexture() {
     ctx.fillStyle = "#0E1014"; ctx.fillRect(0, 0, w, h);
     ctx.fillStyle = "#171A20"; ctx.fillRect(0, 0, w, 48);
     ["#FF5F57", "#FEBC2E", "#28C840"].forEach((c, i) => { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(28 + i * 26, 24, 8, 0, Math.PI * 2); ctx.fill(); });
-    ctx.fillStyle = "#8A8F98"; ctx.font = `400 22px ${FONT_MONO}`; ctx.fillText("mail — shashank", 120, 32);
+    ctx.fillStyle = "#8A8F98"; ctx.font = `400 22px ${FONT_MONO}`; ctx.fillText(`mail — ${PROFILE.handle}`, 120, 32);
     ctx.font = `400 30px ${FONT_MONO}`;
-    [["$ contact --me", "#E6E1D6"], ["shashankhosamani1109@gmail.com", "#C8FF5A"], ["github.com/Shashankhosamani", "#A8D8FF"], ["linkedin.com/in/shashank-l-h", "#A8D8FF"], ["", ""], ["Click to say hi →", "#FFC98A"]].forEach(([t, c], i) => {
+    [["$ contact --me", "#E6E1D6"], [EMAIL, "#C8FF5A"], [LINKS.github.replace("https://", ""), "#A8D8FF"], [LINKS.linkedin.replace("https://www.", ""), "#A8D8FF"], ["", ""], ["Click to say hi →", "#FFC98A"]].forEach(([t, c], i) => {
       ctx.fillStyle = c; ctx.fillText(t, 40, 110 + i * 54);
     });
   });

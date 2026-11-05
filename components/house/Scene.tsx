@@ -7,55 +7,114 @@ import { ToneMappingMode } from "postprocessing";
 import * as THREE from "three";
 import { useHouse } from "@/lib/store";
 import { player, walkTo, use } from "@/lib/player";
-import { HOTSPOTS, type HotspotId } from "@/lib/nav";
+import { HOTSPOTS, roomOf, type HotspotId } from "@/lib/nav";
 import { Shell } from "./Shell";
 import { Furniture } from "./Furniture";
 import { NameSign, Pendant } from "./Home";
 import { Lighting } from "./Lighting";
 import { CeilingFixtures } from "./Ceiling";
 import { Player, look } from "./Player";
+import { Avatar } from "./Avatar";
+import { Hands } from "./Hands";
 import { screens, spots } from "./screens";
 
 const ease = (x: number) => x * x * (3 - 2 * x);
 const EYE = 1.62, SEATED_EYE = 1.15;
+const TP = { height: 4.2, dist: 5.0, ahead: 1.1 };
 
-/** First-person camera: your eyes. Lowers when you sit; glides into screens and up to the printer. */
+/**
+ * One camera, two views.
+ * First person: your eyes, lower when you sit, with a footstep bob.
+ * Third person: above and behind you, dollhouse-style, fading walls in the way.
+ * Either view glides into a screen when you use a computer, and up to the printer.
+ */
 function CameraRig() {
-  const { camera, size } = useThree();
+  const { camera, size, scene } = useThree();
   const eye = useRef(new THREE.Vector3(player.x, EYE, player.z));
+  const base = useRef(new THREE.Vector3(player.x, EYE, player.z));
+  const baseLook = useRef(new THREE.Vector3(player.x, EYE, player.z - 1));
   const zoom = useRef(0);
   const zoomPos = useRef(new THREE.Vector3());
   const zoomLook = useRef(new THREE.Vector3());
   const bob = useRef(0);
+  const blend = useRef(1);
+  const lastView = useRef<string | null>(null);
+  const ray = useMemo(() => new THREE.Raycaster(), []);
+  const occluders = useRef<THREE.Mesh[]>([]);
   const reduce = useMemo(() => typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches, []);
+
+  useEffect(() => {
+    const collect = () => {
+      const list: THREE.Mesh[] = [];
+      scene.traverse((o) => { if ((o as THREE.Mesh).isMesh && o.userData.occluder) list.push(o as THREE.Mesh); });
+      occluders.current = list;
+    };
+    collect();
+    const id = setInterval(collect, 2000);
+    return () => clearInterval(id);
+  }, [scene]);
 
   useFrame((state, rawDt) => {
     const dt = Math.min(rawDt, 0.05);
     const cam3 = camera as THREE.PerspectiveCamera;
-    // ~75° across on any screen; phones get a taller view
-    const aspect = size.width / size.height;
-    const vfov = Math.min(88, Math.max(55, (2 * Math.atan(Math.tan((75 * Math.PI) / 360) / aspect) * 180) / Math.PI));
-    if (Math.abs(cam3.fov - vfov) > 0.01) { cam3.fov = vfov; cam3.updateProjectionMatrix(); }
+    const st = useHouse.getState();
+    const third = st.view === "third";
+    if (lastView.current !== st.view) { if (lastView.current !== null) blend.current = 0; lastView.current = st.view; }
+    blend.current = reduce ? 1 : Math.min(1, blend.current + dt * 1.6);
 
-    // head: smooth turning, gentle footstep bob, lower when seated
+    const aspect = size.width / size.height;
+    const tall = aspect < 0.8;
+    const vfov = third
+      ? Math.min(tall ? 72 : 80, Math.max(50, (2 * Math.atan(Math.tan((70 * Math.PI) / 360) / aspect) * 180) / Math.PI))
+      : Math.min(88, Math.max(55, (2 * Math.atan(Math.tan((75 * Math.PI) / 360) / aspect) * 180) / Math.PI));
+    if (Math.abs(cam3.fov - vfov) > 0.05) { cam3.fov += (vfov - cam3.fov) * Math.min(1, dt * 6); cam3.updateProjectionMatrix(); }
+
     const k = reduce ? 1 : Math.min(1, dt * 9);
     look.yaw += (look.yawTarget - look.yaw) * k;
     look.pitch += (look.pitchTarget - look.pitch) * k;
-    const seated = player.mode === "seated" && player.seat;
-    if (player.speed > 0.1 && !reduce) bob.current += dt * (player.speed > 2.4 ? 13 : 9);
-    const bobY = reduce ? 0 : Math.sin(bob.current) * Math.min(0.03, player.speed * 0.012);
-    const sway = player.mode === "dancing" && !reduce ? Math.sin(state.clock.elapsedTime * 4.2) * 0.05 : 0;
-    const want = seated
-      ? new THREE.Vector3(player.seat![0], SEATED_EYE, player.seat![2])
-      : new THREE.Vector3(player.x, EYE + bobY, player.z);
-    eye.current.lerp(want, seated || eye.current.y < EYE - 0.05 ? Math.min(1, dt * 5) : 1);
-    if (!seated) { eye.current.x = want.x; eye.current.z = want.z; }
 
-    const dir = new THREE.Vector3(-Math.sin(look.yaw) * Math.cos(look.pitch), Math.sin(look.pitch), -Math.cos(look.yaw) * Math.cos(look.pitch));
-    const target = eye.current.clone().add(dir);
+    const wantPos = new THREE.Vector3(), wantLook = new THREE.Vector3();
+    if (!third) {
+      // eyes: lower when seated, small footstep bob, a gentle sway while the music plays
+      const seated = player.mode === "seated" && player.seat;
+      if (player.speed > 0.1 && !reduce) bob.current += dt * (player.speed > 2.4 ? 13 : 9);
+      const bobY = reduce ? 0 : Math.sin(bob.current) * Math.min(0.03, player.speed * 0.012);
+      const want = seated ? new THREE.Vector3(player.seat![0], SEATED_EYE, player.seat![2]) : new THREE.Vector3(player.x, EYE + bobY, player.z);
+      eye.current.lerp(want, seated || eye.current.y < EYE - 0.05 ? Math.min(1, dt * 5) : 1);
+      if (!seated) { eye.current.x = want.x; eye.current.z = want.z; }
+      const sway = player.mode === "dancing" && !reduce ? Math.sin(state.clock.elapsedTime * 4.2) * 0.05 : 0;
+      wantPos.copy(eye.current).add(new THREE.Vector3(Math.cos(look.yaw), 0, -Math.sin(look.yaw)).multiplyScalar(sway));
+      const dir = new THREE.Vector3(-Math.sin(look.yaw) * Math.cos(look.pitch), Math.sin(look.pitch), -Math.cos(look.yaw) * Math.cos(look.pitch));
+      wantLook.copy(wantPos).add(dir);
+    } else {
+      // above and behind; keep the camera over your own room so the other room never blocks the view
+      const dist = tall ? 3.0 : TP.dist, height = tall ? 6.4 : TP.height, ahead = tall ? 0.6 : TP.ahead;
+      wantPos.set(player.x + Math.sin(look.yaw) * dist, height, player.z + Math.cos(look.yaw) * dist);
+      if (roomOf(player.z) === 1) { if (wantPos.z > -6.15) { wantPos.y += (wantPos.z + 6.15) * 0.15; wantPos.z = -6.15; } }
+      else if (wantPos.z < -5.85) { wantPos.y += (-5.85 - wantPos.z) * 0.15; wantPos.z = -5.85; }
+      wantLook.set(player.x - Math.sin(look.yaw) * ahead, 0.7, player.z - Math.cos(look.yaw) * ahead);
+      if (tall) wantLook.z = Math.min(wantLook.z, roomOf(player.z) === 0 ? -2.0 : -8.0);
+      // seated: frame the seat from the front if there's room for the camera, otherwise over the shoulder
+      if (player.mode === "seated" && player.seat) {
+        const [sx, , sz, syaw] = player.seat;
+        const fx = Math.sin(syaw), fz = Math.cos(syaw);
+        const r = roomOf(sz), zMin = r === 0 ? -5.6 : -11.6, zMax = r === 0 ? -0.4 : -6.4;
+        const d = tall ? 2.6 : 3.0;
+        const front = new THREE.Vector3(sx + fx * d, 2.5, sz + fz * d);
+        const inside = Math.abs(front.x) < 3.2 && front.z > zMin && front.z < zMax;
+        if (inside) wantPos.copy(front);
+        else wantPos.set(sx - fx * 2.2, 2.6, sz - fz * 2.2);
+        wantLook.set(sx, 0.75, sz);
+      }
+      eye.current.set(player.x, EYE, player.z);
+    }
+    // glide between views when switching; follow smoothly in third person
+    const follow = reduce ? 1 : third ? Math.min(1, dt * 4) : 1;
+    const b = ease(blend.current);
+    base.current.lerp(wantPos, b < 1 ? Math.min(1, dt * 3.5) : follow);
+    baseLook.current.lerp(wantLook, b < 1 ? Math.min(1, dt * 4) : third ? Math.min(1, dt * 6) : 1);
 
     // sitting at a computer or standing at the printer: glide in close
-    const st = useHouse.getState();
     const mesh = st.computer ? screens[st.computer] : undefined;
     const printer = !mesh && st.printState !== "idle" ? spots.printer : undefined;
     if (printer) {
@@ -75,10 +134,28 @@ function CameraRig() {
     const focused = !!(mesh || printer);
     zoom.current = reduce ? (focused ? 1 : 0) : THREE.MathUtils.damp(zoom.current, focused ? 1 : 0, 3.2, dt);
     const z = ease(Math.min(1, zoom.current));
-    camera.position.copy(eye.current).lerp(zoomPos.current, z);
-    const sideways = new THREE.Vector3(Math.cos(look.yaw), 0, -Math.sin(look.yaw)).multiplyScalar(sway);
-    camera.position.add(sideways.multiplyScalar(1 - z));
-    camera.lookAt(target.lerp(zoomLook.current, z));
+    camera.position.copy(base.current).lerp(zoomPos.current, z);
+    camera.lookAt(baseLook.current.clone().lerp(zoomLook.current, z));
+
+    // third person: fade any wall between the camera and you. First person: everything solid.
+    let hit = new Set<THREE.Mesh>();
+    if (third && z < 0.5) {
+      const head = new THREE.Vector3(player.x, 1.0, player.z);
+      const dir = head.clone().sub(camera.position);
+      ray.set(camera.position, dir.clone().normalize()); ray.far = dir.length();
+      hit = new Set(ray.intersectObjects(occluders.current, false).map((h) => h.object as THREE.Mesh));
+    }
+    for (const m of occluders.current) {
+      const mat = m.material as THREE.MeshStandardMaterial;
+      const target = hit.has(m) ? 0.12 : 1;
+      if (target < 1 || mat.opacity < 1) {
+        mat.transparent = true;
+        mat.opacity = THREE.MathUtils.damp(mat.opacity, target, 10, dt);
+        mat.depthWrite = mat.opacity > 0.95;
+        if (target === 1 && mat.opacity > 0.995) { mat.opacity = 1; mat.transparent = false; mat.depthWrite = true; }
+        mat.needsUpdate = true;
+      }
+    }
   });
   return null;
 }
@@ -148,14 +225,6 @@ function ClickMarker() {
   );
 }
 
-function onHouseClick(e: ThreeEvent<MouseEvent>) {
-  if (e.delta > 6) return; // that was a drag to turn the camera
-  const st = useHouse.getState();
-  if (st.computer || st.printState !== "idle") return;
-  walkTo(e.point.x, e.point.z);
-  dispatchEvent(new CustomEvent("house:walk", { detail: { x: e.point.x, z: e.point.z } }));
-}
-
 /** Drag anywhere on the canvas to look around (left/right and up/down). */
 function useDragToTurn(el: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
@@ -175,6 +244,17 @@ function useDragToTurn(el: React.RefObject<HTMLDivElement | null>) {
   }, [el]);
 }
 
+/** The robot in third person, hands in first person. */
+function Views() {
+  const view = useHouse((s) => s.view);
+  return (
+    <>
+      <Avatar visible={view === "third"} />
+      <Hands visible={view === "first"} />
+    </>
+  );
+}
+
 export default function Scene({ quality }: { quality: "high" | "low" }) {
   const paused = useHouse((s) => s.osOpen);
   const wrap = useRef<HTMLDivElement>(null);
@@ -192,14 +272,13 @@ export default function Scene({ quality }: { quality: "high" | "low" }) {
         <color attach="background" args={["#050505"]} />
         <Suspense fallback={null}>
           <Lighting />
-          <group onClick={onHouseClick}>
-            <Shell />
-            <Furniture />
-          </group>
+          <Shell />
+          <Furniture />
           <CeilingFixtures />
           <NameSign />
           <Pendant z={-3.0} />
           <Player />
+          <Views />
           <Hotspots />
           <ClickMarker />
           <Preload all />
